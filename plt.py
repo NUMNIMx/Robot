@@ -4,14 +4,14 @@ import csv
 X = []
 Y = []
 
-with open('robot_positions.csv', 'r') as csvfile:
+with open('robot_positions_before.csv', 'r') as csvfile:
     lines = csv.reader(csvfile)
     next(lines)  # Skip the header row
     for row in lines:
         if row:  # Check if the row is not empty
             X.append(float(row[0]))
             Y.append(float(row[1]))
-
+plt.figure(figsize=(6,6))
 plt.plot(X, Y)
 plt.xlabel('X Position')
 plt.ylabel('Y Position')

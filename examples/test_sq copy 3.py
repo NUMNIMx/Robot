@@ -19,29 +19,74 @@ if __name__ == '__main__':
     ep_robot.initialize(conn_type="ap")
     
     ep_chassis = ep_robot.chassis
-    x_val = 0.4 
-    y_val = 0 ; 
-    z_val = -90
-    i = 0
-    
+    j = 0
+   
     ep_chassis.sub_position(freq=10, callback=sub_position_handler)
     time.sleep(1)
-    
-    #รอบที่ 1 จุดมุ่งหมาย x = 1.2 y = 0
-    while True:
-        if float(fm_x) != x_val:
-            x_dif=x_val-fm_x
-        if float(fm_y) != y_val:
-            y_dif=y_val-fm_y
-        ep_chassis.move(x=x_dif, y=y_dif, z=0, z_speed=45).wait_for_completed()
-        x_val += 0.4
-        i += 1
-        if i == 3 :
-            ep_chassis.move(x=0, y=0, z=z_val, z_speed=45).wait_for_completed()
-            i = 0
-            break
-    
-        print(fm_x,fm_y)
+    while j<5:
+        x_val = 0.4 ; x_val2 = 1.2 ; x_val3 = 0.8 ; x_val4 = 0
+        y_val = 0 ; y_val2 = 0.4 ; y_val3 = 1.2 ; y_val4 = 0.8
+        z_val = -90
+        i = 0 
+        y_dif=0
+        x_dif=0
+        #รอบที่ 1 จุดมุ่งหมาย x = 1.2 y = 0
+        while True:
+            if float(fm_x) != x_val:
+                x_dif=x_val-fm_x
+            if float(fm_y) != y_val:
+                y_dif=y_val-fm_y
+            ep_chassis.move(x=x_dif, y=y_dif, z=0, xy_speed=6).wait_for_completed()
+            x_val += 0.4
+            print(fm_x,fm_y)
+            i += 1
+            if i == 3 :
+                ep_chassis.move(x=0, y=0, z=z_val, z_speed=150).wait_for_completed()
+                i = 0
+                break
+        #รอบที่ 2 x should be 1.2 y should be 1.2
+        while True:
+            if float(fm_x) != x_val2:
+                x_dif=x_val2-fm_x
+            if float(fm_y) != y_val2:
+                y_dif=y_val2-fm_y
+            ep_chassis.move(x=y_dif, y=-(x_dif), z=0, xy_speed=6).wait_for_completed()
+            y_val2 += 0.4
+            print(fm_x,fm_y)
+            i += 1
+            if i == 3 :
+                ep_chassis.move(x=0, y=0, z=z_val, z_speed=150).wait_for_completed()
+                i = 0
+                break
+        #รอบที่ 3
+        while True :
+            if float(fm_x) != x_val3:
+                x_dif=x_val3-fm_x
+            if float(fm_y) != y_val3:
+                y_dif=y_val3-fm_y
+            ep_chassis.move(x=-(x_dif), y=-(y_dif), z=0, xy_speed=6).wait_for_completed()
+            x_val3 -= 0.4
+            print(fm_x,fm_y)
+            i += 1
+            if i == 3 :
+                ep_chassis.move(x=0, y=0, z=z_val, z_speed=150).wait_for_completed()
+                i = 0
+                break
+        #รอบที่ 4
+        while True:
+            if float(fm_x) != x_val4:
+                x_dif=x_val4-fm_x
+            if float(fm_y) != y_val4:
+                y_dif=y_val4-fm_y
+            ep_chassis.move(x=-(y_dif), y=x_dif, z=0, xy_speed=6).wait_for_completed()
+            y_val4 -= 0.4
+            print(fm_x,fm_y)
+            i += 1
+            if i == 3 :
+                ep_chassis.move(x=0, y=0, z=z_val, z_speed=150).wait_for_completed()
+                i = 0
+                break
+        j+=1
 
     ep_chassis.unsub_position()
 

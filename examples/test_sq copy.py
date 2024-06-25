@@ -18,19 +18,21 @@ if __name__ == '__main__':
     ep_robot.initialize(conn_type="ap")
     
     ep_chassis = ep_robot.chassis
-    
-    x_val = 1.2
-    y_val = 0.6
-    z_val = -90
-    i = 0
-    
+    j=0
+  
     ep_chassis.sub_position(freq=10, callback=sub_position_handler)
-    
-    while i < 4:
-        ep_chassis.move(x=x_val, y=0, z=0, xy_speed=0.6).wait_for_completed()
-        ep_chassis.move(x=0, y=0, z=z_val, z_speed=45).wait_for_completed()
-        i += 1
-    
+    while j < 5:
+        x_val = 1.2
+        y_val = 0.6
+        z_val = -90
+        i = 0
+        
+        while i < 4:
+            ep_chassis.move(x=x_val, y=0, z=0, xy_speed=0.6).wait_for_completed()
+            ep_chassis.move(x=0, y=0, z=z_val, z_speed=45).wait_for_completed()
+            i += 1
+        j+=1
+        
     ep_chassis.unsub_position()
     ep_robot.close()
     
@@ -38,4 +40,4 @@ if __name__ == '__main__':
     df = pd.DataFrame(positions)
     
     # บันทึกเป็นไฟล์ CSV
-    df.to_csv('robot_positions.csv', index=False)
+    df.to_csv('robot_positions_before.csv', index=False)
