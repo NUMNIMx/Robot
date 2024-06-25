@@ -4,7 +4,7 @@ import csv
 X = []
 Y = []
 
-with open('robot_positions_before.csv', 'r') as csvfile:
+with open('robot_positions.csv', 'r') as csvfile:
     lines = csv.reader(csvfile)
     next(lines)  # Skip the header row
     for row in lines:

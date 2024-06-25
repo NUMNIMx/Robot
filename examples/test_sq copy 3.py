@@ -23,7 +23,7 @@ if __name__ == '__main__':
    
     ep_chassis.sub_position(freq=10, callback=sub_position_handler)
     time.sleep(1)
-    while j<5:
+    while j<2:
         x_val = 0.4 ; x_val2 = 1.2 ; x_val3 = 0.8 ; x_val4 = 0
         y_val = 0 ; y_val2 = 0.4 ; y_val3 = 1.2 ; y_val4 = 0.8
         z_val = -90
