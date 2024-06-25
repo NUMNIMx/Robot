@@ -1,0 +1,24 @@
+2024-06-24 10:14:28,523 INFO robot.py:1299 Robot: try to connection robot.
+2024-06-24 10:14:28,523 INFO conn.py:281 CONN TYPE is rndis
+2024-06-24 10:14:28,524 INFO conn.py:321 SdkConnection: request_connection, local addr ('192.168.42.3', 10294), remote_addr ('192.168.42.2', 20020), proxy addr ('192.168.42.2', 30030)
+2024-06-24 10:14:28,524 WARNING conn.py:274 SdkConnection: switch_remote_route, exception:[WinError 10051] A socket operation was attempted to an unreachable network, Please Check Connections.
+2024-06-24 10:14:28,524 WARNING conn.py:275 SdkConnection:Traceback (most recent call last):
+  File "D:\Subject\Robot Ai\Robot first week\RoboMaster-SDK\venv\lib\site-packages\robomaster\conn.py", line 253, in switch_remote_route
+    self._sock.sendto(buf, remote_addr)
+OSError: [WinError 10051] A socket operation was attempted to an unreachable network
+
+2024-06-24 10:14:28,530 ERROR robot.py:1353 Robot: Connection Failed, Please Check Hareware Connections!!! conn_type rndis, host ('192.168.42.3', 10294), target ('192.168.42.2', 20020).
+2024-06-24 10:14:28,531 INFO robot.py:1305 Robot: initialized, try to use default Client.
+2024-06-24 10:14:28,532 ERROR client.py:70 Client: __init__, create Connection, exception: module 'robomaster.config' has no attribute 'DEFAULT_CONN_PROTO'
+2024-06-24 10:14:28,532 WARNING client.py:105 Client: initialize, no connections, init connections first.
+2024-06-24 10:14:28,534 INFO dds.py:186 Subscriber: dispatcher_task is running...
+2024-06-24 10:14:28,535 INFO uart.py:68 serial: dispatcher_task is running...
+2024-06-24 10:14:28,535 ERROR client.py:153 Client: send_sync_msg, client recv_task is not running.
+2024-06-24 10:14:28,535 WARNING robot.py:1453 Robot: enable_sdk error.
+2024-06-24 10:14:28,536 ERROR client.py:153 Client: send_sync_msg, client recv_task is not running.
+2024-06-24 10:14:28,536 WARNING robot.py:1523 Robot: reset dds node fail!
+2024-06-24 10:14:28,537 ERROR client.py:153 Client: send_sync_msg, client recv_task is not running.
+2024-06-24 10:14:28,537 WARNING robot.py:1509 Robot: enable_dds err.
+2024-06-24 10:14:28,537 ERROR client.py:153 Client: send_sync_msg, client recv_task is not running.
+2024-06-24 10:14:28,538 ERROR client.py:153 Client: send_sync_msg, client recv_task is not running.
+2024-06-24 10:14:28,538 WARNING vision.py:260 Robot: enable vision failed.
