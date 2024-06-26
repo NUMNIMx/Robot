@@ -83,7 +83,8 @@ if __name__ == "__main__":
     time.sleep(1)
 
     # PID controller constants
-    p = ???
+    p = 0.5
+
 
     data_pith_yaw = []
 
@@ -110,7 +111,7 @@ if __name__ == "__main__":
                 )
 
                 # หมุน gimbal ตามความเร็วที่คำนวณมาก
-                ep_gimbal.drive_speed(pitch_speed=-speed_y, yaw_speed=speed_x)
+                ep_gimbal.drive_speed(pitch_speed=speed_y, yaw_speed=-speed_x)
 
                 # เก็บค่ามุมของ gimbal, error x, error y, speed x, speed y
                 data_pith_yaw.append(

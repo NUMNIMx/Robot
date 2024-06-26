@@ -61,7 +61,7 @@ def on_detect_person(gesture_info):
 
 if __name__ == '__main__':
     ep_robot = robot.Robot()
-    ep_robot.initialize(conn_type="rndis")
+    ep_robot.initialize(conn_type="ap")
 
     ep_vision = ep_robot.vision
     ep_camera = ep_robot.camera
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
     value_lock = threading.Lock()
     for i in range(0, 500):
-        img = ep_camera.read_cv2_image(strategy="newest", timeout=1.5)
+        img = ep_camera.read_cv2_image(strategy="newest", timeout=10)
         for j in range(0, len(gestures)):
             value_lock.acquire()
             cv2.rectangle(img, gestures[j].pt1, gestures[j].pt2, (255, 255, 255))
