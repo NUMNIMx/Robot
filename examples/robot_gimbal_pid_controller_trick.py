@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
+start =  time.time()
 # คลาสสำหรับเก็บข้อมูล marker(ป้าย)
 class MarkerInfo:
     # ข้อมูลจุดตรงกลางป้าย ความกว้าง ความยาว ข้อมูลป้าย
@@ -67,12 +68,16 @@ if __name__ == "__main__":
     ep_camera = ep_robot.camera
     ep_gimbal = ep_robot.gimbal
     ep_blaster = ep_robot.blaster
-
-    # the image center constants
-    center_x = 1280 / 2
+    i=1
+    # the image center constants4
+    
+    center_x = (1280 / 2)
     center_y = 720 / 2
+    
 
     ep_camera.start_video_stream(display=False)
+    end = time.time()
+    print(end-start)
     ep_gimbal.sub_angle(freq=50, callback=sub_data_handler)
     result = ep_vision.sub_detect_info(name="marker", callback=on_detect_marker)
 
@@ -83,7 +88,7 @@ if __name__ == "__main__":
     time.sleep(1)
 
     # PID controller constants
-    p = 0.5
+    p = 0.25
 
 
     data_pith_yaw = []
@@ -100,7 +105,10 @@ if __name__ == "__main__":
             err_y = (
                 center_y - y
             )  # err_y = image_center in y direction - current marker center in y direction
-
+            if after_time==3:
+                center_x *=1/2
+            if after_time==6:
+                center_x*=3
             if count >= 1:
                 # คำนวณความเร็วในการหมุน gimbal โดยใช้ PID
                 speed_x = (
@@ -112,7 +120,7 @@ if __name__ == "__main__":
 
                 # หมุน gimbal ตามความเร็วที่คำนวณมาก
                 ep_gimbal.drive_speed(pitch_speed=speed_y, yaw_speed=-speed_x)
-
+            
                 # เก็บค่ามุมของ gimbal, error x, error y, speed x, speed y
                 data_pith_yaw.append(
                     list(list_of_data)
@@ -126,7 +134,7 @@ if __name__ == "__main__":
             ep_gimbal.drive_speed(pitch_speed=0, yaw_speed=0)
 
         # อ่านภาพ
-        img = ep_camera.read_cv2_image(strategy="newest", timeout=0.5)
+        img = ep_camera.read_cv2_image(strategy="newest", timeout=5)
 
         # วาดสี่เหลี่ยมบนภาพในตำแหน่งที่เจอป้าย
         for j in range(0, len(markers)):
@@ -142,6 +150,7 @@ if __name__ == "__main__":
             )
         # แสดงภาพ
         cv2.imshow("Markers", img)
+        
         # สำหรับออกจาก loop while
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
