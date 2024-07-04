@@ -8,7 +8,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-start =  time.time()
 # คลาสสำหรับเก็บข้อมูล marker(ป้าย)
 class MarkerInfo:
     # ข้อมูลจุดตรงกลางป้าย ความกว้าง ความยาว ข้อมูลป้าย
@@ -68,17 +67,13 @@ if __name__ == "__main__":
     ep_camera = ep_robot.camera
     ep_gimbal = ep_robot.gimbal
     ep_blaster = ep_robot.blaster
-    i=1
-    # the image center constants4
-    
-    center_x = (1280 / 4)
+
+    # the image center constants
+    # center_x = 1280 / 2
     center_y = 720 / 2
-    
 
     ep_camera.start_video_stream(display=False)
-    end = time.time()
-    print(end-start)
-    ep_gimbal.sub_angle(freq=50, callback=sub_data_handler)
+    ep_gimbal.sub_angle(freq=10, callback=sub_data_handler)
     result = ep_vision.sub_detect_info(name="marker", callback=on_detect_marker)
 
     # หมุน gimbal กลับไปที่ center
@@ -88,35 +83,31 @@ if __name__ == "__main__":
     time.sleep(1)
 
     # PID controller constants
-    p = 0.227
-
+    p = 0.5
 
     data_pith_yaw = []
 
     # loop การทำงานของหุ่น
-
+    center_data = []
+    frame = 0
+    sw = True
     while True:
-    
-        if count >= 200:
-            center_x = (1280 / 4)*3
-        if count == 400:
-            count = 0
-            center_x = (1280 / 4)
-        print(count)
+        frame += 1
+        sw = sw if frame % 200 else not sw
+        center_x = 1280 * (0.25 if sw else 0.75)
+        # center_data = center_data.append(center_x)
+        # center_y = 720 * (1/4 if frame % 200 else 3/4)
         if len(markers) != 0:  # target found
             after_time = time.time()
             x, y = markers[-1].center  # x,y here in the pixel unit
 
             err_x = (
-                center_x - x
+                center_x - x      #R = X -> Goal , Center_x = Kp , KU = K*U
             )  # err_x = image_center in x direction - current marker center in x direction
             err_y = (
                 center_y - y
             )  # err_y = image_center in y direction - current marker center in y direction
-            if after_time==3:
-                center_x *=1/2
-            if after_time==6:
-                center_x*=3
+
             if count >= 1:
                 # คำนวณความเร็วในการหมุน gimbal โดยใช้ PID
                 speed_x = (
@@ -126,24 +117,27 @@ if __name__ == "__main__":
                     (p * err_y)
                 )
 
+                
                 # หมุน gimbal ตามความเร็วที่คำนวณมาก
                 ep_gimbal.drive_speed(pitch_speed=speed_y, yaw_speed=-speed_x)
-            
+
                 # เก็บค่ามุมของ gimbal, error x, error y, speed x, speed y
                 data_pith_yaw.append(
                     list(list_of_data)
-                    + [err_x, err_y, round(speed_x, 3), round(speed_y, 3), center_x, x]
+                    + [err_x, err_y, round(speed_x, 3), round(-speed_y, 3), center_x, x]
                 )
 
             count += 1
+            # print(F"SX: {speed_x} SY: {speed_y}")
 
         else:
             # หมุนกลับ center
             ep_gimbal.drive_speed(pitch_speed=0, yaw_speed=0)
 
         # อ่านภาพ
-        img = ep_camera.read_cv2_image(strategy="newest", timeout=5)
+        img = ep_camera.read_cv2_image(strategy="newest", timeout=0.5)
 
+        
         # วาดสี่เหลี่ยมบนภาพในตำแหน่งที่เจอป้าย
         for j in range(0, len(markers)):
             cv2.rectangle(img, markers[j].pt1, markers[j].pt2, (0, 255, 0))
@@ -156,9 +150,17 @@ if __name__ == "__main__":
                 (0, 255, 0),
                 3,
             )
+            cv2.putText(
+                img,
+                str(frame % 200),
+                (10, 25),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.5,
+                (0, 255, 0),
+                3,
+            )
         # แสดงภาพ
         cv2.imshow("Markers", img)
-        
         # สำหรับออกจาก loop while
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
@@ -177,9 +179,6 @@ if __name__ == "__main__":
     y_point7 = [i[7] for i in data_pith_yaw]
     y_point8 = [i[8] for i in data_pith_yaw]
     y_point9 = [i[9] for i in data_pith_yaw]
-    '''y_t = 
-    x_t = [1280/2,1280/4,(1280/4)*3]'''
-
 
     plt.plot(x_point, y_point8)
     plt.plot(x_point, y_point9)
