@@ -27,10 +27,8 @@ if __name__ == '__main__':
     y_val = 0.6
     z_val = -90
     i = 0
-    while i<4 :
-        ep_chassis.move(x=x_val, y=0, z=0, xy_speed=0.7).wait_for_completed()
-        ep_chassis.move(x=0, y=0, z=z_val, _zspeed=45).wait_for_completed()
-        i += 1
+   
+    ep_chassis.move(x=-1, y=0, z=0, xy_speed=0.7)
     # 前进 0.5米
     
     # 后退 0.5米
