@@ -6,12 +6,18 @@ positions = []  # เพิ่มลิสต์เก็บตำแหน่�
 list_attitude = []
 list_imu = []
 list_esc = []
+lst_time = []
 list_tof = []
+c_time = time.time()
+    
 #attitude
 def sub_attitude_info_handler(attitude_info):
     yaw, pitch, roll = attitude_info
+    
+    end = time.time()-c_time
     print("chassis attitude: yaw:{0}, pitch:{1}, roll:{2} ".format(yaw, pitch, roll))
     list_attitude.append("yaw:{0}, pitch:{1}, roll:{2} ".format(yaw, pitch, roll))
+    lst_time.append("seacound:{0}".format(end))
 #position
 def sub_position_handler(position_info):
     x, y, z = position_info
@@ -47,7 +53,7 @@ if __name__ == '__main__':
     ep_sensor = ep_robot.sensor
     ep_chassis = ep_robot.chassis
     ep_gimbal = ep_robot.gimbal
-
+    previous_time = time.time()
     j = 0
     ep_sensor.sub_distance(freq=10, callback=sub_data_handler)
     ep_chassis.sub_esc(freq=10, callback=sub_esc_info_handler)
@@ -56,6 +62,7 @@ if __name__ == '__main__':
     ep_chassis.sub_position(freq=10, callback=sub_position_handler)
     time.sleep(1)
     while j<3:
+        
         x_val = 0.2 ; x_val2 = 0.6 ; x_val3 = 0.4 ; x_val4 = 0
         y_val = 0 ; y_val2 = 0.2 ; y_val3 = 0.6 ; y_val4 = 0.4
         z_val = -90
@@ -112,6 +119,8 @@ if __name__ == '__main__':
                 y_dif=y_val4-fm_y
             ep_chassis.move(x=-(y_dif), y=x_dif, z=0, xy_speed=6).wait_for_completed()
             y_val4 -= 0.2
+    
+    
             print(fm_x,fm_y)
             i += 1
             if i == 3 :
@@ -121,6 +130,9 @@ if __name__ == '__main__':
         ep_gimbal.recenter(pitch_speed=300, yaw_speed=300).wait_for_completed()
 
         j+=1
+    end_time=time.time()
+    now_time= end_time-previous_time
+    print(now_time)
     ep_sensor.unsub_distance()
     ep_chassis.unsub_esc()
     ep_chassis.unsub_imu()
@@ -131,7 +143,19 @@ if __name__ == '__main__':
     ep_robot.close()
     
     # สร้าง DataFrame จากข้อมูลตำแหน่งที่เก็บไว้
-    df = pd.DataFrame(positions)
+    df1 = pd.DataFrame(positions)
+    df2 = pd.DataFrame(list_attitude)
+    df3 = pd.DataFrame(list_esc)
+    df4 = pd.DataFrame(list_imu)
+    df5 = pd.DataFrame(list_tof)
+    df6 = pd.DataFrame(lst_time)
     
     # บันทึกเป็นไฟล์ CSV
-    df.to_csv('robot_positions.csv', index=False)
+    df1.to_csv('robot_positions.csv', index=False)
+    df2.to_csv('robot_attitude.csv', index=False)
+    df3.to_csv('robot_esc.csv', index=False)
+    df4.to_csv('robot_imu.csv', index=False)
+    df5.to_csv('robot_tof.csv', index=False)
+    df6.to_csv("timme.csv",index=False)
+
+
