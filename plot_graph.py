@@ -7,9 +7,9 @@ time_data['time'] = time_data['time'].astype(float)
 
 # Read the other CSV files
 robot_positions = pd.read_csv('robot_positions.csv')
-atti_fix = pd.read_csv('atti_fix.csv')
-esc_fix = pd.read_csv('esc_fix.csv')
-imu_fix = pd.read_csv('imu_fix.csv')
+atti_fix = pd.read_csv('robot_attitude.csv')
+esc_fix = pd.read_csv('robot_esc.csv')
+imu_fix = pd.read_csv('robot_imu.csv')
 robot_tof = pd.read_csv('robot_tof.csv', sep=':', header=None, names=['label', 'tof'])
 
 # Clean and convert tof data
