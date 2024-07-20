@@ -16,7 +16,7 @@ def sub_attitude_info_handler(attitude_info):
     
     end = time.time()-c_time
     print("chassis attitude: yaw:{0}, pitch:{1}, roll:{2} ".format(yaw, pitch, roll))
-    list_attitude.append("yaw:{0}, pitch:{1}, roll:{2} ".format(yaw, pitch, roll))
+    list_attitude.append({'yaw':yaw,'pitch':pitch,'roll':roll})
     lst_time.append("seacound:{0}".format(end))
 #position
 def sub_position_handler(position_info):
@@ -24,28 +24,26 @@ def sub_position_handler(position_info):
     global fm_x
     global fm_y
     #print("chassis position: x:{0}, y:{1}, z:{2}".format(x, y, z))
-    fm_x = float("{:.4f}".format(float(x)))    
-    fm_y= float("{:.4f}".format(float(y)))  
-    
-    positions.append({'x': fm_x, 'y': fm_y,'z':z})#เก็บตำแหน่งx และ y ในลิสต์
+    fm_x = float("{:.4f}".format(float(x)))
+    fm_y= float("{:.4f}".format(float(y)))
+    positions.append({'x': fm_x, 'y': fm_y,'z':z}) #เก็บตำแหน่งx และ y ในลิสต์
 #imu
 def sub_imu_info_handler(imu_info):
     acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z = imu_info
     print("chassis imu: acc_x:{0}, acc_y:{1}, acc_z:{2}, gyro_x:{3}, gyro_y:{4}, gyro_z:{5}".format(
         acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z))
-    list_imu.append("acc_x:{0}, acc_y:{1}, acc_z:{2}, gyro_x:{3}, gyro_y:{4}, gyro_z:{5}".format(
-        acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z))
+    list_imu.append({'acc_x':acc_x, 'acc_y':acc_y, 'acc_z':acc_z, 'gyro_x':gyro_x, 'gyro_y':gyro_y, 'gyro_z':gyro_z})
 #esc
 def sub_esc_info_handler(esc_info):
     speed, angle, timestamp, state = esc_info
     print("chassis esc: speed:{0}, angle:{1}, timestamp:{2}, state:{3}".format(speed, angle, timestamp, state))
-    list_esc.append("speed:{0}, angle:{1}, timestamp:{2}, state:{3}".format(speed, angle, timestamp, state))
+    list_esc.append({'speed':speed, 'angle':angle, 'timestamp':timestamp, 'state':state})
 
 #tof
 def sub_data_handler(sub_info):
     distance = sub_info
     print("tof1:{0}  tof2:{1}  tof3:{2}  tof4:{3}".format(distance[0], distance[1], distance[2], distance[3]))
-    list_tof.append("tof1:{0}".format(distance[0]))
+    list_tof.append({'0':distance[0]})
 
 if __name__ == '__main__':
     ep_robot = robot.Robot()
