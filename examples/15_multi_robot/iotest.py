@@ -13,25 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import robomaster
 from robomaster import robot
 import time
 
-
 def sub_data_handler(sub_info):
-    distance = sub_info
-    print("tof1:{0}  tof2:{1}  tof3:{2}  tof4:{3}".format(distance[0], distance[1], distance[2], distance[3]))
-    return distance
-
-
+    io_data, ad_data = sub_info
+    print("io value: {0}, ad value: {1}".format(io_data, ad_data))
+    if io_data[0] == 1:
+        ep_chassis.drive_speed(x=0.5)  # Move forward with a speed of 0.5 m/s
+    else:
+        ep_chassis.drive_speed(x=0)  # Stop the robot
 
 if __name__ == '__main__':
     ep_robot = robot.Robot()
     ep_robot.initialize(conn_type="ap")
 
-    ep_sensor = ep_robot.sensor
-    ep_sensor.sub_distance(freq=5, callback=sub_data_handler)
-    time.sleep(60)
-    ep_sensor.unsub_distance()
-    ep_robot.close()
+    ep_chassis = ep_robot.chassis
+    ep_sensor = ep_robot.sensor_adaptor
+    ep_sensor.sub_adapter(freq=5, callback=sub_data_handler)
+    
+    try:
+        time.sleep(60)  # Keep the program running for 60 seconds
+    finally:
+        ep_sensor.unsub_adapter()
+        ep_robot.close()
