@@ -15,6 +15,8 @@ def sub_position_handler(position_info):
     x, y, z = position_info
     axis['x'].append(float(x))
     axis['y'].append(float(y))
+
+
 #
 #acurator
 def chasing(sub_pos,tof):
