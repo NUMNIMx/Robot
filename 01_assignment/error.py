@@ -8,8 +8,41 @@ axis = {'x':[],'y':[]}
 ad = {'left':[],'right':[]}
 s = [0,0,0]
 
+
 #sensors
 #tof
+def adc_l(left):
+    vl_volt = ((left/ 1023) * 3.1)
+    print(vl_volt)
+    if vl_volt >= 1.6:
+        cm1 = ((vl_volt - 4.2) / -0.326)-1.6
+        ad['left'].append(cm1)
+        print('cmL = ',cm1)
+    elif vl_volt >= 0.5:
+        cm1 = ((vl_volt - 2.4) / -0.1)-2
+        ad['left'].append(cm1)
+        print('cmL = ',cm1)
+    else:
+        cm1 = 30
+        ad['left'].append(cm1)
+        print('cmL = ',cm1)
+
+def adc_r(right):
+    vr_volt = ((right/ 1023) * 3.1)
+    print(vr_volt)
+    if vr_volt >= 1.6:
+        cm2 = ((vr_volt - 4.2) / -0.326)-2
+        ad['right'].append(cm2)
+        print('cmR = ',cm2)
+    elif vr_volt >= 0.5:
+        cm2 = ((vr_volt - 2.4) / -0.1)-2
+        ad['right'].append(cm2)
+        print('cmR = ',cm2)
+    else:
+        cm2 = 30
+        ad['right'].append(cm2)
+        print('cmR = ',cm2)
+
 def sub_data_handler(sub_info):
     distance = sub_info
     #print("tof1:{0}  tof2:{1}  tof3:{2}  tof4:{3}".format(distance[0], distance[1], distance[2], distance[3]))
@@ -21,9 +54,10 @@ def sub_data_handler(sub_info):
 def sub_data_handler2(sub_info):
     io,ad_data = sub_info
     #print("ad value: {0}".format(ad_data))
-    ad['left'].append(float(ad_data[0]))
-    ad['right'].append(float(ad_data[2]))
-    
+    # ad['left'].append(float(ad_data[0]))
+    # ad['right'].append(float(ad_data[2]))
+    adc_l(float(ad_data[0]))
+    adc_r(float(ad_data[2]))
     state(l_tof, ad)
     #print(s)
 
@@ -39,7 +73,7 @@ def sub_position_handler(position_info):
 def state(tof, charp):
     #sharp ยิ่งห่างยิ่งน้อยมยิ่งใกล้ยิ่งเยอะ
     #tof ยิ่งใกล้ยิ่งน้อย,ยิ่่งห่างยิ่งมาก
-    min_charp = 140
+    min_charp = 20
     #print("tof:", tof)
     #print("charp:", charp)
     
@@ -54,7 +88,7 @@ def state(tof, charp):
     
     if len(charp['left']) > 0:
         #print("charp['left'][-1]:", charp['left'][-1])
-        if charp['left'][-1] >= min_charp:
+        if charp['left'][-1] <= min_charp:
             s[0] = 1
             #print("Setting s[0] to 1")
         else:
@@ -63,7 +97,7 @@ def state(tof, charp):
     
     if len(charp['right']) > 0:
         #print("charp['right'][-1]:", charp['right'][-1])
-        if charp['right'][-1] >= min_charp:
+        if charp['right'][-1] <= min_charp:
             s[2] = 1
             #print("Setting s[2] to 1")
         else:
@@ -77,6 +111,16 @@ def change_state(s):
         state = states[0]
     elif s[1] == 1:
         state = states[3]
+        if s[2] == 0:
+            state = states[2]
+        elif s[2] == 1:
+            if s[0] == 0:
+                state = states[0]
+        
+                
+        
+
+    
     
 
 # def error(sub_pos,ref_x,ref_y):
