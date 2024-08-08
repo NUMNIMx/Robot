@@ -32,4 +32,7 @@ if __name__ == '__main__':
     ep_sensor.sub_adapter(freq=5, callback=sub_data_handler)
     time.sleep(60)
     ep_sensor.unsub_adapter()
+
+
+    
     ep_robot.close()

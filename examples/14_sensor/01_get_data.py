@@ -24,7 +24,7 @@ if __name__ == '__main__':
     ep_sensor_adaptor = ep_robot.sensor_adaptor
 
     # 获取传感器转接板adc值
-    adc = ep_sensor_adaptor.get_adc(id=2, port=1)
+    adc = ep_sensor_adaptor.get_adc(id=1, port=2)
     print("sensor adapter id1-port1 adc is {0}".format(adc))
     adc2 = ep_sensor_adaptor.get_adc(id=2, port=2)
     print("sensor adapter id1-port1 adc is {0}".format(adc2))

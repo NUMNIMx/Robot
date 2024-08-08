@@ -5,15 +5,27 @@ from robomaster import robot
 states = ['foward','left','right','turnback']
 l_tof = []
 axis = {'x':[],'y':[]}
+ad = {'left':[],'right':[]}
 s = [0,0,0]
 
 #sensors
 #tof
 def sub_data_handler(sub_info):
     distance = sub_info
-    print("tof1:{0}  tof2:{1}  tof3:{2}  tof4:{3}".format(distance[0], distance[1], distance[2], distance[3]))
+    #print("tof1:{0}  tof2:{1}  tof3:{2}  tof4:{3}".format(distance[0], distance[1], distance[2], distance[3]))
     l_tof.append(int(distance[0]))
 
+    state(l_tof, ad)
+    #print(s)
+#ad
+def sub_data_handler2(sub_info):
+    io,ad_data = sub_info
+    #print("ad value: {0}".format(ad_data))
+    ad['left'].append(float(ad_data[0]))
+    ad['right'].append(float(ad_data[2]))
+    
+    state(l_tof, ad)
+    #print(s)
 
 #sub_pos
 def sub_position_handler(position_info):
@@ -24,21 +36,39 @@ def sub_position_handler(position_info):
 #acurator
 #state
 
-def state(tof,charp):
-    min_charp = 0
-    if tof <= 300:
-        s[1] = 1
-    else:
-        s[1] = 0
-    if charp[0] <= min_charp :
-        s[0] = 1
-    else :
-        s[0] = 0
-    if charp[1] <= min_charp :
-        s[2] = 1
-    else:
-        s[2] = 0
-    return s
+def state(tof, charp):
+    min_charp = 140
+    #print("tof:", tof)
+    #print("charp:", charp)
+    
+    if len(tof) > 0:
+        #print("tof[-1]:", tof[-1])
+        if tof[-1] <= 310:
+            s[1] = 1
+            #print("Setting s[1] to 1")
+        else:
+            s[1] = 0
+            #print("Setting s[1] to 0")
+    
+    if len(charp['left']) > 0:
+        #print("charp['left'][-1]:", charp['left'][-1])
+        if charp['left'][-1] >= min_charp:
+            s[0] = 1
+            #print("Setting s[0] to 1")
+        else:
+            s[0] = 0
+            #print("Setting s[0] to 0")
+    
+    if len(charp['right']) > 0:
+        #print("charp['right'][-1]:", charp['right'][-1])
+        if charp['right'][-1] >= min_charp:
+            s[2] = 1
+            #print("Setting s[2] to 1")
+        else:
+            s[2] = 0
+            #print("Setting s[2] to 0")
+    
+    print("Updated s:", s)
 
 def change_state(s):
     if s[1] == 0 :
@@ -73,13 +103,6 @@ def forward(sub_pos,l_tof):
     ref_pos_x = sub_pos['x'][-1]
     ref_pos_y = sub_pos['y'][-1]
     # if l_tof[-1] <= 400:
-    #     err_x,err_y = error(sub_pos,ref_pos_x,ref_pos_y)
-    while True:
-        if l_tof[-1] > 400:
-            ep_chassis.move(x=error, y=0, z=0, xy_speed=0.5).wait_for_completed()
-        else:
-            ep_chassis.move(x=0, y=0, z=0, xy_speed=0).wait_for_completed()
-            pass
 
 def backward(sub_pos,l_tof):
     while True:
@@ -106,13 +129,18 @@ if __name__ == '__main__':
     ep_robot.initialize(conn_type="ap")
     ep_chassis = ep_robot.chassis
     ep_sensor = ep_robot.sensor
+    ep_sensor_adaptor = ep_robot.sensor_adaptor
+    
+    ep_sensor_adaptor.sub_adapter(freq=5, callback=sub_data_handler2)
     ep_sensor.sub_distance(freq=5, callback=sub_data_handler)
     ep_chassis.sub_position(freq=5, callback=sub_position_handler)
     
 
-    time.sleep(10)
+    time.sleep(60)
+    ep_sensor_adaptor.unsub_adapter()
     ep_sensor.unsub_distance()
     ep_chassis.unsub_position()
     ep_robot.close()
-    print(l_tof)
-    print(axis)
+    #print(l_tof)
+    #print(axis)
+    #print(ad)
