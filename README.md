@@ -1,8 +1,6 @@
-# RoboMaster-SDK
+# Project RoboMaster-SDK กลุ่ม Raidee
 
-[![Gitter](https://badges.gitter.im/RoboMaster-SDK/community.svg)](https://gitter.im/RoboMaster-SDK/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
-<img src="docs/source/images/robomaster.jpg" width="600">
+<img src="https://drive.google.com/file/d/1SVhNdsxgNe5MAKmvBxg2JtxqPWp3qm91/view?usp=sharing" width="600">
 
 Learn more about the RoboMaster Education Robot: https://www.dji.com/robomaster-ep
 
