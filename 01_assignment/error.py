@@ -37,6 +37,8 @@ def sub_position_handler(position_info):
 #state
 
 def state(tof, charp):
+    #sharp ยิ่งห่างยิ่งน้อยมยิ่งใกล้ยิ่งเยอะ
+    #tof ยิ่งใกล้ยิ่งน้อย,ยิ่่งห่างยิ่งมาก
     min_charp = 140
     #print("tof:", tof)
     #print("charp:", charp)
