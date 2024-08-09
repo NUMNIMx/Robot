@@ -123,6 +123,12 @@ def move_forward(l_tof,axis,s):
                 lst_c_pos['x_c'].append(axis['x'][-1]);  lst_c_pos['y_c'].append(axis['y'][-1])
                 print(lst_c_pos)
                 break
+def turnleft():
+    pass
+def turnright():
+    pass
+def turnback():
+    pass
 
 if __name__ == '__main__':
     ep_robot = robot.Robot()
@@ -146,6 +152,15 @@ if __name__ == '__main__':
                     center_cal(ad['left'][-1], ad['right'][-1])
                 if s[1] == 0 :
                     move_forward(l_tof,axis,s)
+                elif s[1] == 1 :
+                    if s[0] == 0:
+                        turnleft()
+                    elif s[0] == 1:
+                        if s[2] == 0:
+                            turnright()
+                        else:
+                            turnback()
+
 
 
     
