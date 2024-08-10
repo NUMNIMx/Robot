@@ -65,7 +65,7 @@ def sub_position_handler(position_info):
 def state(tof, charp):
     min_charp = 20
     if len(tof) > 0:
-        if tof[-1] <= 290:
+        if tof[-1] <= 300:
             s[1] = 1
         else:
             s[1] = 0
@@ -128,7 +128,7 @@ def move_forward(l_tof,axis,s):
             ep_chassis.drive_wheels(w1=speed, w2=speed, w3=speed, w4=speed)
             print(l_tof[-1])
 
-            if l_tof[-1]<=290:
+            if l_tof[-1]<=310:
                 ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
                 lst_c_pos['x_c'].append(axis['x'][-1]);  lst_c_pos['y_c'].append(axis['y'][-1])
                 print(lst_c_pos)
@@ -194,34 +194,30 @@ if __name__ == '__main__':
         #                     move_forward(l_tof,axis,s)
         #                 else:
         #                     turnback()
-        # if s[2] == 1 and s[0] == 1 :
-        #     if err_sharp >= 2 :
-        #         center_cal2(ad['left'][-1], ad['right'][-1])
-        #         if s[1] == 0 :
-        #             move_forward(l_tof,axis,s)
-        #         elif s[1] == 1 :
-        #             if s[0] == 0:
-        #                 turnleft()
-        #                 #ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()    
-        #             elif s[0] == 1:
-        #                 if s[2] == 0:
-        #                     turnright()
-        #                 else:
-        #                     turnback()
-        # if (s[2] == 0 and s[0] == 1) or (s[2] == 1 and s[0] == 0) :
-        #    if err_sharp >= 2 :
-        #         center_cal2(ad['left'][-1], ad['right'][-1])
-        #         if s[1] == 0 :
-        #             move_forward(l_tof,axis,s)
-        #         elif s[1] == 1 :
-        #             if s[0] == 0:
-        #                 turnleft()
-        #                 #ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()    
-        #             elif s[0] == 1:
-        #                 if s[2] == 0:
-        #                     turnright()
-        #                 else:
-        #                     turnback()
+        if s[2] == 1 and s[0] == 1 :
+            if err_sharp >= 2 :
+                center_cal2(ad['left'][-1], ad['right'][-1])
+                if s[1] == 0 :
+                    move_forward(l_tof,axis,s)
+                # elif s[1] == 1 :
+                #     if s[0] == 0:
+                #         turnleft().wait_for_completed()
+                #         move_forward(l_tof,axis,s)
+                #         #ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()    
+                #     elif s[0] == 1:
+                #         if s[2] == 0:
+                #             turnright()
+                #             move_forward(l_tof,axis,s)
+                        # else:
+                        #     turnback()
+        elif s[2] == 1 and s[0] == 0 :
+            if err_sharp >= 2 :
+                center_cal2(ad['left'][-1], ad['right'][-1])
+                if s[0] == 1:
+                        if s[2] == 0:
+                            turnright()
+                            move_forward(l_tof,axis,s)
+
 
 
 

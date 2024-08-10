@@ -37,7 +37,7 @@ def adc_r(right):
         cm2 = ((vr_volt - 4.2) / -0.326)-2
         ad['right'].append(cm2)
         print('cmR = ',cm2)
-    elif vr_volt >= 0.3:
+    elif vr_volt >= 0.8:
         cm2 = ((vr_volt - 2.4) / -0.1)-2
         ad['right'].append(cm2)
         print('cmR = ',cm2)
@@ -81,19 +81,21 @@ def state(tof, charp):
             s[2] = 1
         else:
             s[2] = 0
-    
     print("Updated s:", s)
+    # change_state(s)
 
 def change_state(s):
     if s[1] == 0 :
-        state = states[0]
-    elif s[1] == 1:
-        state = states[3]
-        if s[2] == 0:
-            state = states[2]
-        elif s[2] == 1:
-            if s[0] == 0:
-                state = states[0]
+            state = states[0]
+    elif s[1] == 1 :
+        if s[0] == 0 :
+            state = states[1]
+        elif s[0] == 1 :
+            if s[2] == 0 :
+                state = states[2]
+            elif s[2] == 1 :
+                state = states[3]
+    print(state)
 
 def center_cal(adl, adr):
     if adl > adr or adl < adr:
@@ -172,28 +174,11 @@ if __name__ == '__main__':
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
     while True:
         
-        err_sharp = abs(ad['left'][-1] - ad['right'][-1])
+        # err_sharp = abs(ad['left'][-1] - ad['right'][-1])
         if keyboard.is_pressed('q'):
             print("Exiting loop...")
             break
-
-        # if s[2] == 1 and s[0] == 1 :
-        #     if err_sharp >= 1.5 :
-        #         if ad['left'][-1]!=30 or ad['right'][-1] != 30:
-        #             center_cal(ad['left'][-1], ad['right'][-1])
-        #         if s[1] == 0 :
-        #             move_forward(l_tof,axis,s)
-        #         elif s[1] == 1 :
-        #             if s[0] == 0:
-        #                 turnleft()
-        #                 move_forward(l_tof,axis,s)
-        #                 #ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()    
-        #             elif s[0] == 1:
-        #                 if s[2] == 0:
-        #                     turnright()
-        #                     move_forward(l_tof,axis,s)
-        #                 else:
-        #                     turnback()
+        
         # if s[2] == 1 and s[0] == 1 :
         #     if err_sharp >= 2 :
         #         center_cal2(ad['left'][-1], ad['right'][-1])
