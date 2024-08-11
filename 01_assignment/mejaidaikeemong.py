@@ -191,22 +191,17 @@ if __name__ == '__main__':
                         move_forward(l_tof, axis, s)
                 
                 elif s[0] == 0:
-                    turnleft()
+                    if s[1]==1 and s[2]==1:
+                     turnleft()
+                    elif s[2]==0 and s[1]==1:
+                     maze_runner(s)
+                        
                 
                 elif s[2] == 0:
-                    turnright()
-                
-                elif s[0] == 0 and s[1] == 1 and s[2] == 1:
-                    turnleft()
-                
-                elif s[2] == 0 and s[1] == 1 and s[0] == 1:
-                    turnright()
-                
-                elif s[0] == 0 and s[1] == 0 and s[2] == 1:
-                    move_forward(l_tof, axis, s)
-                
-                elif s[2] == 0 and s[1] == 0 and s[0] == 1:
-                    move_forward(l_tof, axis, s)
+                    if s[0]==1 and s[1]==1:
+                     turnright()
+                    elif s[0]==0 and s[1]==1:
+                     maze_runner(s)
                 
                 else:
                     turnback()
