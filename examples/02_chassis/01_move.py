@@ -28,7 +28,7 @@ if __name__ == '__main__':
     z_val = -90
     i = 0
    
-    ep_chassis.move(x=-1, y=0, z=0, xy_speed=0.7)
+    ep_chassis.move(x=0, y=0, z=90, xy_speed=0.7).wait_for_completed()
     # 前进 0.5米
     
     # 后退 0.5米

@@ -13,30 +13,30 @@ time_values = [0]
 start_time = time.time()
 previous_filtered_left = 0.0
 previous_filtered_right = 0.0
-alpha = 0.3 
+alpha = 0.1 
 
 filtered_left_values = []
 filtered_right_values = []
 time_plot_values = []
-volt_to_cm = {
-    3.0: 2,
-    2.95: 3,
-    2.8: 4,
-    2.6: 5,
-    2.2: 6,
-    1.8: 8,
-    1.4: 12,
-    1.0: 18,
-    0.8: 22,
-    0.6: 28,
-    0.4: 34,
-    0.2: 38
-}
+# volt_to_cm = {
+#     3.0: 2,
+#     2.95: 3,
+#     2.8: 4,
+#     2.6: 5,
+#     2.2: 6,
+#     1.8: 8,
+#     1.4: 12,
+#     1.0: 18,
+#     0.8: 22,
+#     0.6: 28,
+#     0.4: 34,
+#     0.2: 38
+# }
 
-def convert_volt_to_cm(volt):
-    # หาค่า cm ที่สอดคล้องกับ volt โดยการหาใกล้เคียงที่สุดใน dictionary
-    closest_volt = min(volt_to_cm.keys(), key=lambda k: abs(k - volt))
-    return volt_to_cm[closest_volt]
+# def convert_volt_to_cm(volt):
+#     # หาค่า cm ที่สอดคล้องกับ volt โดยการหาใกล้เคียงที่สุดใน dictionary
+#     closest_volt = min(volt_to_cm.keys(), key=lambda k: abs(k - volt))
+#     return volt_to_cm[closest_volt]
 #sensors
 #tof
 def adc_l(left):
@@ -192,42 +192,45 @@ def center_cal2(adl, adr):
         print('move complete')
 
 
-def move_forward(l_tof,axis,s):
-    lst_c_pos = {'x_c':[],'y_c':[]}
-    while s[1] == 0:
-        if s[1] == 0:
-            ep_chassis.drive_wheels(w1=speed, w2=speed, w3=speed, w4=speed)
-            print(l_tof[-1])
+def move_forward(l_tof, axis, s):
+    lst_c_pos = {'x_c': [], 'y_c': []}
+    if s[1] == 0:
+        ep_chassis.drive_wheels(w1=speed, w2=speed, w3=speed, w4=speed)
+        #print(l_tof[-1])
 
-            if l_tof[-1]<=290:
-                ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
-                lst_c_pos['x_c'].append(axis['x'][-1]);  lst_c_pos['y_c'].append(axis['y'][-1])
-                print(lst_c_pos)
-                break
+        if l_tof[-1] <= 290:
+            ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
+            s[1] = 1
+            #print(lst_c_pos)
+            
+
+
+            
+
 def maze_runner(s):
     l_s = 0
     r_s = 0
-    if s[0]==0 and s[2]==0 and s[1] == 1:
+    if s[0] == 0 and s[2] == 0 and s[1] == 1:
         if l_s == r_s:
-            r_s+=1
+            r_s += 1
             ep_chassis.move(x=0, y=0, z=-90, xy_speed=0.7)
         elif l_s > r_s:
-            r_s=+1
+            r_s += 1
             ep_chassis.move(x=0, y=0, z=90, xy_speed=0.7)
         elif l_s < r_s:
-            l_s=+1
+            l_s += 1
             ep_chassis.move(x=0, y=0, z=-90, xy_speed=0.7)
-        
+
 def turnleft():
-    ep_chassis.move(x=0,y=0,z=90,xy_speed=0.7).wait_for_completed()
+    ep_chassis.move(x=0, y=0, z=90, xy_speed=0.7).wait_for_completed()
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
-    
-    
+
 def turnright():
-    ep_chassis.move(x=0,y=0,z=-90,xy_speed=0.7).wait_for_completed()
+    ep_chassis.move(x=0, y=0, z=-90, xy_speed=0.7).wait_for_completed()
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
+
 def turnback():
-    ep_chassis.move(x=0,y=0,z=180,xy_speed=0.7).wait_for_completed()
+    ep_chassis.move(x=0, y=0, z=180, xy_speed=0.7).wait_for_completed()
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
 
 if __name__ == '__main__':
@@ -241,54 +244,57 @@ if __name__ == '__main__':
     ep_sensor.sub_distance(freq=5, callback=sub_data_handler)
     ep_chassis.sub_position(freq=5, callback=sub_position_handler)
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
+
     while True:
-        #print("Updated s:", s)
-        # err_sharp = abs(ad['left'][-1] - ad['right'][-1])
+        
+
+        print(s)
+        if s[0] == 1 and s[1] == 1 and s[2] == 1:
+            move_forward(l_tof, axis, s)    
+        if s[0] == 1 and s[1] == 1 and s[2] == 0:
+            turnright()
+            move_forward(l_tof, axis, s)
+        if s[0] == 1 and s[1] == 0 and s[2] == 1:
+            maze_runner(s)
+        if s[0] == 1 and s[1] == 0 and s[2] == 0:
+            turnright()
+            move_forward(l_tof, axis, s)
+        if s[0] == 0 and s[1] == 1 and s[2] == 1:
+            turnleft()
+            move_forward(l_tof, axis, s)
+        if s[1] == 0:
+            if s[0] == 1 and s[2] == 1:
+                move_forward(l_tof, axis, s)
+            if s[0] == 1 and s[2] == 0:
+                turnright()
+                move_forward(l_tof, axis, s)
+            if s[2] == 1 and s[0] == 0:
+                turnleft()
+                move_forward(l_tof, axis, s)
+        
+        if s[0] == 0:
+            if s[1] == 1 and s[2] == 1:
+                turnleft()
+                move_forward(l_tof, axis, s)
+            if s[2] == 0 and s[1] == 1:
+                maze_runner(s)
+                
+        if s[0] == 0 and s[1]==0  and s[2] == 1:
+            turnleft()
+            move_forward(l_tof, axis, s)
+        if s[0] == 1 and s[1]==0  and s[2] == 0:
+            turnright()
+            move_forward(l_tof, axis, s)
+        if s[0] == 0 and s[1] == 0 and s[2] == 1:
+            maze_runner(s)
+        
+        if s[0] == 1 and s[1] == 1 and s[2] == 1:
+            turnback()
+
         if keyboard.is_pressed('q'):
             print("Exiting loop...")
             break
-
         
-        # if s[2] == 1 and s[0] == 1 :
-        #     if err_sharp >= 2qq :
-        #         center_cal2(ad['left'][-1], ad['right'][-1])
-        #         if s[1] == 0 :
-        #             move_forward(l_tof,axis,s)
-        #         elif s[1] == 1 :
-        #             if s[0] == 0:
-        #                 turnleft()
-        #                 #ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()    
-        #             elif s[0] == 1:
-        #                 if s[2] == 0:
-        #                     turnright()
-        #                 else:
-        #                     turnback()
-        # if (s[2] == 0 and s[0] == 1) or (s[2] == 1 and s[0] == 0) :
-        #    if err_sharp >= 2 :
-        #         center_cal2(ad['left'][-1], ad['right'][-1])
-        #         if s[1] == 0 :
-        #             move_forward(l_tof,axis,s)
-        #         elif s[1] == 1 :
-        #             if s[0] == 0:
-        #                 turnleft()
-        #                 #ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()    
-        #             elif s[0] == 1:
-        #                 if s[2] == qq0:
-        #                     turnright()
-        #                 else:ๆๆ
-
-    plt.figure(figsize=(10, 5))
-    plt.plot(time_plot_values, filtered_left_values, label='Filtered Left AD')
-    plt.plot(time_plot_values, filtered_right_values, label='Filtered Right AD')
-    plt.xlabel('Time (seconds)')
-    plt.ylabel('AD Sensor Value')
-    plt.title('Filtered AD Sensor Values Over Time')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-
-    
     ep_sensor_adaptor.unsub_adapter()
     ep_sensor.unsub_distance()
     ep_chassis.unsub_position()

@@ -163,13 +163,13 @@ def maze_runner(s):
     if s[0] == 0 and s[2] == 0 and s[1] == 1:
         if l_s == r_s:
             r_s += 1
-            ep_chassis.move(x=0, y=0, z=-90, xy_speed=0.7)
+            ep_chassis.move(x=0, y=0, z=90, xy_speed=0.7)
         elif l_s > r_s:
             r_s += 1
-            ep_chassis.move(x=0, y=0, z=90, xy_speed=0.7)
+            ep_chassis.move(x=0, y=0, z=-90, xy_speed=0.7)
         elif l_s < r_s:
             l_s += 1
-            ep_chassis.move(x=0, y=0, z=-90, xy_speed=0.7)
+            ep_chassis.move(x=0, y=0, z=90, xy_speed=0.7)
 
 def turnleft():
     ep_chassis.move(x=0, y=0, z=90, xy_speed=0.7).wait_for_completed()
@@ -196,9 +196,9 @@ if __name__ == '__main__':
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
 
     while True:
-        
+        print(s)   
         if s[1] == 0:
-            print(s)
+            
             if s[0] == 1 and s[2] == 1:
                 move_forward(l_tof, axis, s)
             if s[0] == 1 and s[2] == 0:
@@ -223,11 +223,7 @@ if __name__ == '__main__':
                 move_forward(l_tof, axis, s)    
             if s[0] == 0  and s[2] == 0:
                 maze_runner(s)
-
-        
-        
-
-        
+                
         else:
             turnback()
 

@@ -8,7 +8,7 @@ l_tof = []
 axis = {'x':[],'y':[]}
 ad = {'left':[0],'right':[0]}
 s = [0,0,0]
-speed = 15
+speed = 40
 time_values = [0]
 start_time = time.time()
 
@@ -145,17 +145,20 @@ def center_cal2(adl, adr):
 
 def move_forward(l_tof, axis, s):
     lst_c_pos = {'x_c': [], 'y_c': []}
-    while s[1] == 0:
+    while True:
         if s[1] == 0:
             ep_chassis.drive_wheels(w1=speed, w2=speed, w3=speed, w4=speed)
-            print(l_tof[-1])
+            #print(l_tof[-1])
 
             if l_tof[-1] <= 290:
                 ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
                 lst_c_pos['x_c'].append(axis['x'][-1])
                 lst_c_pos['y_c'].append(axis['y'][-1])
-                print(lst_c_pos)
+                #print(lst_c_pos)
                 break
+
+
+            
 
 def maze_runner(s):
     l_s = 0
@@ -196,52 +199,50 @@ if __name__ == '__main__':
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
 
     while True:
+        
+        
+
         print(s)
         if s[0] == 1 and s[1] == 1 and s[2] == 1:
-            turnback()
-            move_forward(l_tof, axis, s)
+            move_forward(l_tof, axis, s)    
         if s[0] == 1 and s[1] == 1 and s[2] == 0:
             turnright()
             move_forward(l_tof, axis, s)
         if s[0] == 1 and s[1] == 0 and s[2] == 1:
-            move_forward(l_tof, axis, s)
-        elif s[0] == 1 and s[1] == 0 and s[2] == 0:
+            maze_runner(s)
+        if s[0] == 1 and s[1] == 0 and s[2] == 0:
             turnright()
             move_forward(l_tof, axis, s)
         if s[0] == 0 and s[1] == 1 and s[2] == 1:
             turnleft()
             move_forward(l_tof, axis, s)
-        if s[0] == 0 and s[1] == 0 and s[2] == 1:
+        if s[1] == 0:
+            if s[0] == 1 and s[2] == 1:
+                move_forward(l_tof, axis, s)
+            if s[0] == 1 and s[2] == 0:
+                turnright()
+                move_forward(l_tof, axis, s)
+            if s[2] == 1 and s[0] == 0:
+                turnleft()
+                move_forward(l_tof, axis, s)
+        
+        if s[0] == 0:
+            if s[1] == 1 and s[2] == 1:
+                turnleft()
+                move_forward(l_tof, axis, s)
+            if s[2] == 0 and s[1] == 1:
+                maze_runner(s)
+                
+        if s[0] == 0 and s[1]==0  and s[2] == 1:
             turnleft()
             move_forward(l_tof, axis, s)
-
-        # if s[1] == 0:
-        #     if s[0] == 1 and s[2] == 1:
-        #         move_forward(l_tof, axis, s)
-        #     if s[0] == 1 and s[2] == 0:
-        #         turnright()
-        #         move_forward(l_tof, axis, s)
-        #     if s[2] == 1 and s[0] == 0:
-        #         turnleft()
-        #         move_forward(l_tof, axis, s)
+        if s[0] == 1 and s[1]==0  and s[2] == 0:
+            turnright()
+            move_forward(l_tof, axis, s)
+        if s[0] == 0 and s[1] == 0 and s[2] == 1:
+            maze_runner(s)
         
-        # if s[0] == 0:
-        #     if s[1] == 1 and s[2] == 1:
-        #         turnleft()
-        #         move_forward(l_tof, axis, s)
-        #     if s[2] == 0 and s[1] == 1:
-        #         maze_runner(s)
-                
-        # if s[0] == 0 and s[1]==0  and s[2] == 1:
-        #     turnleft()
-        #     move_forward(l_tof, axis, s)
-        # if s[0] == 1 and s[1]==0  and s[2] == 0:
-        #     turnright()
-        #     move_forward(l_tof, axis, s)
-        # if s[0] == 0 and s[1] == 0 and s[2] == 1:
-        #     maze_runner(s)
-        
-        else:
+        if s[0] == 1 and s[1] == 1 and s[2] == 1:
             turnback()
 
         if keyboard.is_pressed('q'):

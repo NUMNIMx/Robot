@@ -178,9 +178,9 @@ if __name__ == '__main__':
             break
 
         # if s[2] == 1 and s[0] == 1 :
-        #     if err_sharp >= 1.5 :
-        #         if ad['left'][-1]!=30 or ad['right'][-1] != 30:
-        #             center_cal(ad['left'][-1], ad['right'][-1])
+            # if err_sharp >= 1.5 :
+            #     if ad['left'][-1]!=30 or ad['right'][-1] != 30:
+            #         center_cal(ad['left'][-1], ad['right'][-1])
         #         if s[1] == 0 :
         #             move_forward(l_tof,axis,s)
         #         elif s[1] == 1 :
