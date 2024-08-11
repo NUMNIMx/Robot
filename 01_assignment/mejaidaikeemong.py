@@ -196,7 +196,7 @@ if __name__ == '__main__':
                     elif s[2]==0 and s[1]==1:
                      maze_runner(s)
                         
-                
+                #สู้ๆคับ
                 elif s[2] == 0:
                     if s[0]==1 and s[1]==1:
                      turnright()

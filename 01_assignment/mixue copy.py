@@ -11,13 +11,6 @@ s = [0,0,0]
 speed = 15
 time_values = [0]
 start_time = time.time()
-previous_filtered_left = 0.0
-previous_filtered_right = 0.0
-alpha = 0.1 
-
-filtered_left_values = []
-filtered_right_values = []
-time_plot_values = []
 
 #sensors
 #tof
@@ -35,7 +28,7 @@ def adc_l(left):
     else:
         cm1 = 'empty'
         ad['left'].append(cm1)
-        print('cmL = ',cm1)
+        # print('cmL = ',cm1)
     
 
 def adc_r(right):
@@ -52,53 +45,39 @@ def adc_r(right):
     else:
         cm2 = 'empty'
         ad['right'].append(cm2)
-        print('cmR = ',cm2)
-
-def low_pass_filter(current_value, previous_filtered_value, alpha):
-    # Apply the IIR filter
-    filtered_value = alpha * current_value + (1 - alpha) * previous_filtered_value
-    return filtered_value
+        # print('cmR = ',cm2)
 
 def sub_data_handler(sub_info):
     distance = sub_info
     l_tof.append(int(distance[0]))
     state(l_tof, ad)
 
+def moving_average(signal, filter_order=5):
+    filtered_signal = []
+    for i in range(len(signal)):
+        if i < filter_order:
+            filtered_signal.append(signal[i])
+        else:
+            filtered_signal.append(sum(signal[i-filter_order:i]) / filter_order)
+    return filtered_signal
+
 def sub_data_handler2(sub_info):
-    global previous_filtered_left, previous_filtered_right
-    io, ad_data = sub_info
-    
-    # Raw sensor readings
-    raw_left = float(ad_data[0])
-    raw_right = float(ad_data[2])
-
-    # Apply the low-pass filter
-    filtered_left = low_pass_filter(raw_left, previous_filtered_left, alpha)
-    filtered_right = low_pass_filter(raw_right, previous_filtered_right, alpha)
-
-    # Update the previous filtered values
-    previous_filtered_left = filtered_left
-    previous_filtered_right = filtered_right
-
-    # Store the filtered values for plotting
-    filtered_left_values.append(filtered_left)
-    filtered_right_values.append(filtered_right)
-
-    # Calculate time for plotting
+    io,ad_data = sub_info
+    # l = adc_l(float(ad_data[0]))
+    # r = adc_r(float(ad_data[2]))
+    filtered_left = moving_average(ad['left'], filter_order=5)
+    filtered_right = moving_average(ad['right'], filter_order=5)
+    ad['left'].append(filtered_left[-1])
+    ad['right'].append(filtered_right[-1])
     end_time = time.time() - start_time
-    time_plot_values.append(end_time)
-
-    # Update the state with filtered values
-    # ad['left'].append(filtered_left)
-    # ad['right'].append(filtered_right)
-    adc_r(filtered_right)
-    adc_l(filtered_left)
+    time_values.append(end_time )   
     state(l_tof, ad)
 
 def sub_position_handler(position_info):
     x, y, z = position_info
     axis['x'].append(float(x))
     axis['y'].append(float(y))
+
 
 def state(tof, charp):
     min_charp = 20
@@ -123,7 +102,7 @@ def state(tof, charp):
             s[2] = 1
         else:
             s[2] = 0
-    #print("Updated s:", s)
+    print("Updated s:", s)
     # change_state(s)
 
 def change_state(s):
@@ -215,7 +194,7 @@ if __name__ == '__main__':
     ep_chassis.sub_position(freq=5, callback=sub_position_handler)
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
     while True:
-        #print("Updated s:", s)
+        
         # err_sharp = abs(ad['left'][-1] - ad['right'][-1])
         if keyboard.is_pressed('q'):
             print("Exiting loop...")
@@ -246,19 +225,32 @@ if __name__ == '__main__':
         #                 turnleft()
         #                 #ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()    
         #             elif s[0] == 1:
-        #                 if s[2] == qq0:
+        #                 if s[2] == 0:
         #                     turnright()
-        #                 else:ๆๆ
+        #                 else:
 
-    plt.figure(figsize=(10, 5))
-    plt.plot(time_plot_values, filtered_left_values, label='Filtered Left AD')
-    plt.plot(time_plot_values, filtered_right_values, label='Filtered Right AD')
-    plt.xlabel('Time (seconds)')
-    plt.ylabel('AD Sensor Value')
-    plt.title('Filtered AD Sensor Values Over Time')
+    plt.figure(figsize=(10, 8))
+    
+    plt.subplot(2, 1, 1)
+    plt.plot(time_values, ad['left'], label='Left Sensor')
+    plt.plot(time_values, ad['right'], label='Right Sensor')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Distance (cm)')
+    plt.title('Distance vs. Time')
     plt.legend()
-    plt.grid(True)
+    
+    plt.subplot(2, 1, 2)
+    plt.plot(axis['x'], axis['y'], label='Robot Path')
+    plt.xlabel('X-axis')
+    plt.ylabel('Y-axis')
+    plt.title('Robot Path')
+    plt.legend()
+    
+    plt.tight_layout()
     plt.show()
+
+    print(ad)
+
 
 
     
