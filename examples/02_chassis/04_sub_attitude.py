@@ -13,26 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+def jee_yaw():
+    if yaw_l[-1] != 95:
+        error_yaw = yaw_l[-1] - 95            
+        return(error_yaw)
+    print( error_yaw)
 import robomaster
 from robomaster import robot
-
+yaw_l =[]
 
 def sub_attitude_info_handler(attitude_info):
+    
     yaw, pitch, roll = attitude_info
+    yaw_l.append(yaw)
     print("chassis attitude: yaw:{0}, pitch:{1}, roll:{2} ".format(yaw, pitch, roll))
 
 
 if __name__ == '__main__':
     ep_robot = robot.Robot()
-    ep_robot.initialize(conn_type="sta")
+    ep_robot.initialize(conn_type="ap")
 
     ep_chassis = ep_robot.chassis
 
     # 订阅底盘姿态信息
     ep_chassis.sub_attitude(freq=10, callback=sub_attitude_info_handler)
-    ep_chassis.move(x=0, y=0, z=90).wait_for_completed()
     ep_chassis.move(x=0, y=0, z=-90).wait_for_completed()
+
+    # ep_chassis.move(x=0, y=0, z=-90).wait_f   or_completed()
     ep_chassis.unsub_attitude()
 
     ep_robot.close()

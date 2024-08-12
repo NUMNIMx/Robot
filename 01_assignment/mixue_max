@@ -6,7 +6,6 @@ from robomaster import robot
 states = ['foward','left','right','turnback']
 l_tof = []
 axis = {'x':[],'y':[]}
-yaw_l = [0]
 ad = {'left':[0],'right':[0]}
 s = [0,0,0]
 speed = 30
@@ -15,10 +14,11 @@ start_time = time.time()
 previous_filtered_left = 0.0
 previous_filtered_right = 0.0
 alpha = 0.3
+
 filtered_left_values = []
 filtered_right_values = []
 time_plot_values = []
-l_z = [-180,-90,0,90,180]
+
 #sensors
 #tof
 
@@ -61,7 +61,6 @@ def low_pass_filter(current_value, previous_filtered_value, alpha):
 def sub_attitude_info_handler(attitude_info):
     yaw, pitch, roll = attitude_info
     print("chassis attitude: yaw:{0}, pitch:{1}, roll:{2} ".format(yaw, pitch, roll))
-    yaw_l.append(float(yaw))
 
 def sub_data_handler(sub_info):
     distance = sub_info
@@ -189,29 +188,8 @@ def center_reset(adl,adr):
 #         move = adr - 11
 #         ep_chassis.move(x=0, y=-move, z=0, xy_speed=0.15).wait_for_completed()
 #         print('move complete')
-def find_closest_value(z, values=[-180, -90, 0, 90, 180]):
-    return min(values, key=lambda x: abs(x - z))
-
-def check_yaw(yaw):
-    move = 0
-    if yaw_l[-1] > 0 :
-        if yaw_l[-1]<yaw:
-            move = yaw_l[-1] - yaw
-            ep_chassis.move(x=0, y=0, z=move)
-        if yaw_l[-1]>yaw:
-            move = yaw_l[-1] - yaw
-            ep_chassis.move(x=0, y=0, z=move)
-    if yaw_l[-1] < 0 :
-        if yaw_l[-1]<yaw:
-            move = yaw_l[-1] - yaw
-            ep_chassis.move(x=0, y=0, z=move)
-        if yaw_l[-1]>yaw:
-            move = yaw_l[-1] - yaw
-            ep_chassis.move(x=0, y=0, z=move)
 
 def move_rside(l_tof,axis,s):
-    yaw = find_closest_value(yaw_l[-1],l_z)
-    print(yaw)
     while True:
         if (ad['left'][-1] != 'empty' and ad['right'][-1] != 'empty'):
             # center_cal(ad['left'][-1], ad['right'][-1]) 
@@ -245,8 +223,6 @@ def move_rside(l_tof,axis,s):
             ep_chassis.move(x=0, y=0, z=180, z_speed=120).wait_for_completed()
             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
             time.sleep(0.5)
-        # elif abs(yaw - yaw_l[-1]) >= 0.5 :   
-        #     check_yaw(yaw)
         if keyboard.is_pressed('q'):
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)  # Stop the robot
             ep_sensor_adaptor.unsub_adapter()
@@ -264,7 +240,9 @@ def move_forward(l_tof, axis, s):
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             s[1] = 1
             #print(lst_c_pos)
-
+def sub_attitude_info_handler(attitude_info):
+    yaw, pitch, roll = attitude_info
+    print("chassis attitude: yaw:{0}, pitch:{1}, roll:{2} ".format(yaw, pitch, roll))
 def turnleft():
     ep_chassis.move(x=0, y=0, z=90, xy_speed=0.7).wait_for_completed()
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
@@ -284,13 +262,12 @@ if __name__ == '__main__':
     ep_sensor = ep_robot.sensor
     ep_sensor_adaptor = ep_robot.sensor_adaptor
     ep_gimbal = ep_robot.gimbal
+    ep_chassis.sub_attitude(freq=10, callback=sub_attitude_info_handler)
     ep_sensor_adaptor.sub_adapter(freq=50, callback=sub_data_handler2)
     ep_sensor.sub_distance(freq=50, callback=sub_data_handler)
     ep_chassis.sub_position(freq=50, callback=sub_position_handler)
-    ep_chassis.sub_attitude(freq=50, callback=sub_attitude_info_handler)
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
     time.sleep(1)
-
     while True:
         if s[1] == 0:
             move_rside(l_tof, axis, s)

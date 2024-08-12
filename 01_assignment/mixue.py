@@ -32,7 +32,10 @@ volt_to_cm = {
     0.4: 34,
     0.2: 38
 }
-
+def sub_attitude_info_handler(attitude_info):
+    yaw, pitch, roll = attitude_info
+    print("chassis attitude: yaw:{0}, pitch:{1}, roll:{2} ".format(yaw, pitch, roll))
+    return yaw
 def convert_volt_to_cm(volt):
     # หาค่า cm ที่สอดคล้องกับ volt โดยการหาใกล้เคียงที่สุดใน dictionary
     closest_volt = min(volt_to_cm.keys(), key=lambda k: abs(k - volt))
@@ -240,6 +243,7 @@ if __name__ == '__main__':
     ep_sensor_adaptor.sub_adapter(freq=5, callback=sub_data_handler2)
     ep_sensor.sub_distance(freq=5, callback=sub_data_handler)
     ep_chassis.sub_position(freq=5, callback=sub_position_handler)
+    
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
     while True:
         #print("Updated s:", s)
