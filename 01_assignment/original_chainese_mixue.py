@@ -41,11 +41,6 @@ time_plot_values = []
 #tof
 def adc_l(left):
     vl_volt = ((left / 1023) * 3.1)
-    # cm1 = convert_volt_to_cm(vl_volt)
-    # ad['left'].append(cm1)
-    # print('cmL = ', cm1)
-
-    # print(vl_volt)
     if vl_volt >= 1.6:
         cm1 = ((vl_volt - 4.2) / -0.326)-1.6
         ad['left'].append(cm1)
@@ -59,14 +54,8 @@ def adc_l(left):
         ad['left'].append(cm1)
         print('cmL = ',cm1)
 
-
-
 def adc_r(right):
     vr_volt = ((right / 1023) * 3.1)
-    # cm2 = convert_volt_to_cm(vr_volt)
-    # ad['right'].append(cm2)
-    # print('cmR = ', cm2)
-    # print(vr_volt)
     if vr_volt >= 1.6:
         cm2 = ((vr_volt - 4.2) / -0.326)-2
         ad['right'].append(cm2)
@@ -215,6 +204,9 @@ def center_reset(adl,adr):
 
 def move_rside(l_tof,axis,s):
     while True:
+        if keyboard.is_pressed('q'):
+            print("Exiting loop...")
+            break
         if (ad['left'][-1] != 'empty' and ad['right'][-1] != 'empty'):
             # center_cal(ad['left'][-1], ad['right'][-1]) 
             center_reset(ad['left'][-1], ad['right'][-1])
@@ -224,21 +216,21 @@ def move_rside(l_tof,axis,s):
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             time.sleep(0.5)
             ep_chassis.move(x=0.15, y=0, z=0, xy_speed=0.5).wait_for_completed()
-            ep_chassis.move(x=0, y=0, z=-90, z_speed=100).wait_for_completed()
+            ep_chassis.move(x=0, y=0, z=-88, z_speed=120).wait_for_completed()
             ep_gimbal.recenter(pitch_speed=150, yaw_speed=150).wait_for_completed()
             ep_chassis.move(x=0.5, y=0, z=0, xy_speed=0.7).wait_for_completed()
             time.sleep(0.5)
         if ad['right'][-1] == 'empty' and s[1] == 1 and (ad['left'][-1] != 'empty' or ad['left'][-1] == 'empty') :#(s[2]==0 and s[0]==1 and s[1]== 1) :
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             time.sleep(0.5)
-            ep_chassis.move(x=0, y=0, z=-90, z_speed=100).wait_for_completed()
+            ep_chassis.move(x=0, y=0, z=-88, z_speed=120).wait_for_completed()
             ep_gimbal.recenter(pitch_speed=150, yaw_speed=150).wait_for_completed()
             ep_chassis.move(x=0.55, y=0, z=0, xy_speed=0.7).wait_for_completed()
             time.sleep(0.5)
         if ad['right'][-1] != 'empty' and s[1] == 1 and ad['left'][-1] == 'empty':#(s[0] == 0 and s[1]==1 and s[2]==1)
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             time.sleep(0.5)
-            ep_chassis.move(x=0, y=0, z=90, z_speed=100).wait_for_completed()
+            ep_chassis.move(x=0, y=0, z=90, z_speed=120).wait_for_completed()
             ep_gimbal.recenter(pitch_speed=150, yaw_speed=150).wait_for_completed()
             time.sleep(0.5)
         if ad['right'][-1] != 'empty' and s[1] == 1 and ad['left'][-1] != 'empty':#s[0] == 1 and s[1] == 1 and s[2] == 1
@@ -247,7 +239,6 @@ def move_rside(l_tof,axis,s):
             ep_chassis.move(x=0, y=0, z=180, z_speed=100).wait_for_completed()
             ep_gimbal.recenter(pitch_speed=150, yaw_speed=150).wait_for_completed()
             time.sleep(0.5)
-
 def move_forward(l_tof, axis, s):
     lst_c_pos = {'x_c': [], 'y_c': []}
     if s[1] == 0:
@@ -272,6 +263,7 @@ def turnback():
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
 
 if __name__ == '__main__':
+    i=0
     ep_robot = robot.Robot()
     ep_robot.initialize(conn_type="ap")
     ep_chassis = ep_robot.chassis
@@ -282,10 +274,24 @@ if __name__ == '__main__':
     ep_sensor.sub_distance(freq=50, callback=sub_data_handler)
     ep_chassis.sub_position(freq=50, callback=sub_position_handler)
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
+    time.sleep(1)
 
-    while True:
+    while i != 1:
+        if keyboard.is_pressed('q'):
+            print("Exiting loop...")
+            i = 1
         if s[1] == 0:
-            move_rside(l_tof,axis,s) 
+            move_rside(l_tof,axis,s)
+
+    
+    plt.figure(figsize=(10, 5))
+    plt.plot(axis['y'], axis['x'], label='Path', marker='o')
+    plt.title('Robot Movement Path')
+    plt.xlabel('X Position')
+    plt.ylabel('Y Position')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
     ep_sensor_adaptor.unsub_adapter()
     ep_sensor.unsub_distance()
