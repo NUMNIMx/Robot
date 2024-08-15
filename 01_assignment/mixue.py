@@ -13,7 +13,7 @@ time_values = [0]
 start_time = time.time()
 previous_filtered_left = 0.0
 previous_filtered_right = 0.0
-alpha = 0.3 
+alpha = 0.2
 
 filtered_left_values = []
 filtered_right_values = []

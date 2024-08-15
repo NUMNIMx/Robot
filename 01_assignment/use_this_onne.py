@@ -2,11 +2,12 @@ import time
 import matplotlib.pyplot as plt
 import keyboard
 from robomaster import robot
+import csv
 
 states = ['foward','left','right','turnback']
 l_tof = []
 axis = {'x':[],'y':[]}
-yaw_l = [0]
+yaw_l = []
 ad = {'left':[0],'right':[0]}
 s = [0,0,0]
 speed = 30
@@ -19,6 +20,7 @@ filtered_left_values = []
 filtered_right_values = []
 time_plot_values = []
 l_z = [-180,-90,0,90,180]
+yaw_t = int()
 #sensors
 #tof
 
@@ -62,6 +64,9 @@ def sub_attitude_info_handler(attitude_info):
     yaw, pitch, roll = attitude_info
     print("chassis attitude: yaw:{0}, pitch:{1}, roll:{2} ".format(yaw, pitch, roll))
     yaw_l.append(float(yaw))
+    yaw_t = find_closest_value(yaw_l[-1],l_z)
+    print('yaw', yaw_t)
+    
 
 def sub_data_handler(sub_info):
     distance = sub_info
@@ -103,6 +108,10 @@ def sub_position_handler(position_info):
     x, y, z = position_info
     axis['x'].append(float(x))
     axis['y'].append(float(y))
+
+    with open('axis_data.csv', 'a', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow([float(x), float(y)])
 
 def state(tof, charp):
     min_charp = 20
@@ -192,61 +201,119 @@ def center_reset(adl,adr):
 def find_closest_value(z, values=[-180, -90, 0, 90, 180]):
     return min(values, key=lambda x: abs(x - z))
 
-def check_yaw(yaw):
+def check_yaw(yaw_t):
     move = 0
-    if yaw_l[-1] > 0 :
-        if yaw_l[-1]<yaw:
-            move = yaw_l[-1] - yaw
-            ep_chassis.move(x=0, y=0, z=move)
-        if yaw_l[-1]>yaw:
-            move = yaw_l[-1] - yaw
-            ep_chassis.move(x=0, y=0, z=move)
-    if yaw_l[-1] < 0 :
-        if yaw_l[-1]<yaw:
-            move = yaw_l[-1] - yaw
-            ep_chassis.move(x=0, y=0, z=move)
-        if yaw_l[-1]>yaw:
-            move = yaw_l[-1] - yaw
-            ep_chassis.move(x=0, y=0, z=move)
+    if yaw_l[-1] > 0:
+        if yaw_l[-1]<yaw_t:
+            move = yaw_l[-1] - yaw_t
+            ep_chassis.move(x=0, y=0, z=move,z_speed=120).wait_for_completed()
+        if yaw_l[-1]>yaw_t:
+            move = yaw_l[-1] - yaw_t
+            ep_chassis.move(x=0, y=0, z=move,z_speed=120).wait_for_completed()
+    if yaw_l[-1] < 0:
+        if yaw_l[-1]<yaw_t:
+            move = yaw_l[-1] - yaw_t
+            ep_chassis.move(x=0, y=0, z=move,z_speed=120).wait_for_completed()
+        if yaw_l[-1]>yaw_t:
+            move = yaw_l[-1] - yaw_t
+            ep_chassis.move(x=0, y=0, z=move,z_speed=120).wait_for_completed()
+    ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
 
-def move_rside(l_tof,axis,s):
-    yaw = find_closest_value(yaw_l[-1],l_z)
-    print(yaw)
+# def move_rside(l_tof,axis,s):
+    
+#     while True:
+#         if (ad['left'][-1] != 'empty' and ad['right'][-1] != 'empty'):
+#             # center_cal(ad['left'][-1], ad['right'][-1]) 
+#             center_reset(ad['left'][-1], ad['right'][-1])
+#         if s[1]==0:
+#             ep_chassis.drive_wheels(w1=speed, w2=speed, w3=speed, w4=speed)
+#         if ad['right'][-1] == 'empty' and s[1]== 0 and (ad['left'][-1] != 'empty' or ad['left'][-1] == 'empty') :#(s[2]==0 and s[0]==1 and s[1]== 0)
+#             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
+#             time.sleep(0.5)
+#             ep_chassis.move(x=0.15, y=0, z=0, xy_speed=0.5).wait_for_completed()
+#             ep_chassis.move(x=0, y=0, z=-89.5, z_speed=120).wait_for_completed()
+#             # if abs(yaw_l[-1]+(-90)) >= 1 :
+#             #     check_yaw(90)
+#             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
+#             ep_chassis.move(x=0.5, y=0, z=0, xy_speed=0.7).wait_for_completed()
+#             time.sleep(0.5)
+#         if ad['right'][-1] == 'empty' and s[1] == 1 and (ad['left'][-1] != 'empty' or ad['left'][-1] == 'empty') :#(s[2]==0 and s[0]==1 and s[1]== 1) :
+#             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
+#             time.sleep(0.5)
+#             ep_chassis.move(x=0, y=0, z=-89.5, z_speed=120).wait_for_completed()
+#             # if abs(yaw_l[-1]+(-90)) >= 1 :
+#             #     check_yaw(90)
+#             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
+#             ep_chassis.move(x=0.55, y=0, z=0, xy_speed=0.7).wait_for_completed()
+#             time.sleep(0.5)
+#         if ad['right'][-1] != 'empty' and s[1] == 1 and ad['left'][-1] == 'empty':#(s[0] == 0 and s[1]==1 and s[2]==1)
+#             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
+#             time.sleep(0.5)
+#             ep_chassis.move(x=0, y=0, z=90, z_speed=120).wait_for_completed()
+#             # if abs(yaw_l[-1]-(-90)) >= 1 :
+#             #     check_yaw(-90)
+#             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
+#             time.sleep(0.5)
+#         if ad['right'][-1] != 'empty' and s[1] == 1 and ad['left'][-1] != 'empty':#s[0] == 1 and s[1] == 1 and s[2] == 1
+#             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
+#             time.sleep(0.5)
+#             ep_chassis.move(x=0, y=0, z=180, z_speed=120).wait_for_completed()
+#             # if abs(yaw_l[-1]-(-180)) >= 1 :
+#             #     check_yaw(-180)
+#             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
+#             time.sleep(0.5)
+#         if keyboard.is_pressed('q'):
+#             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)  # Stop the robot
+#             ep_sensor_adaptor.unsub_adapter()
+#             ep_sensor.unsub_distance()
+#             ep_chassis.unsub_position()
+#             ep_robot.close()
+#             break
+
+def move_lside(l_tof,axis,s):
+    
     while True:
         if (ad['left'][-1] != 'empty' and ad['right'][-1] != 'empty'):
             # center_cal(ad['left'][-1], ad['right'][-1]) 
             center_reset(ad['left'][-1], ad['right'][-1])
         if s[1]==0:
             ep_chassis.drive_wheels(w1=speed, w2=speed, w3=speed, w4=speed)
-        if ad['right'][-1] == 'empty' and s[1]== 0 and (ad['left'][-1] != 'empty' or ad['left'][-1] == 'empty') :#(s[2]==0 and s[0]==1 and s[1]== 0)
+        if ad['left'][-1] == 'empty' and s[1]== 0 and (ad['right'][-1] != 'empty' or ad['right'][-1] == 'empty') :#(s[2]==0 and s[0]==1 and s[1]== 0)
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             time.sleep(0.5)
-            ep_chassis.move(x=0.15, y=0, z=0, xy_speed=0.5).wait_for_completed()
-            ep_chassis.move(x=0, y=0, z=-89.5, z_speed=120).wait_for_completed()
+            ep_chassis.move(x=0.12, y=0, z=0, xy_speed=0.5).wait_for_completed()
+            ep_chassis.move(x=0, y=0, z=89.5, z_speed=120).wait_for_completed()
+            # if abs(yaw_l[-1]+(-90)) >= 1 :
+            #     check_yaw(90)
             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
             ep_chassis.move(x=0.5, y=0, z=0, xy_speed=0.7).wait_for_completed()
             time.sleep(0.5)
-        if ad['right'][-1] == 'empty' and s[1] == 1 and (ad['left'][-1] != 'empty' or ad['left'][-1] == 'empty') :#(s[2]==0 and s[0]==1 and s[1]== 1) :
+        if ad['left'][-1] == 'empty' and s[1] == 1 and (ad['right'][-1] != 'empty' or ad['right'][-1] == 'empty') :#(s[2]==0 and s[0]==1 and s[1]== 1) :
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             time.sleep(0.5)
-            ep_chassis.move(x=0, y=0, z=-89.5, z_speed=120).wait_for_completed()
+            ep_chassis.move(x=0, y=0, z=89.5, z_speed=120).wait_for_completed()
+            # if abs(yaw_l[-1]+(-90)) >= 1 :
+            #     check_yaw(90)
             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
             ep_chassis.move(x=0.55, y=0, z=0, xy_speed=0.7).wait_for_completed()
             time.sleep(0.5)
-        if ad['right'][-1] != 'empty' and s[1] == 1 and ad['left'][-1] == 'empty':#(s[0] == 0 and s[1]==1 and s[2]==1)
+        if ad['left'][-1] != 'empty' and s[1] == 1 and ad['right'][-1] == 'empty':#(s[0] == 0 and s[1]==1 and s[2]==1)
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             time.sleep(0.5)
-            ep_chassis.move(x=0, y=0, z=90, z_speed=120).wait_for_completed()
+            
+            ep_chassis.move(x=0, y=0, z=-90, z_speed=120).wait_for_completed()
+            # if abs(yaw_l[-1]-(-90)) >= 1 :
+            #     check_yaw(-90)
             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
             time.sleep(0.5)
         if ad['right'][-1] != 'empty' and s[1] == 1 and ad['left'][-1] != 'empty':#s[0] == 1 and s[1] == 1 and s[2] == 1
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             time.sleep(0.5)
             ep_chassis.move(x=0, y=0, z=180, z_speed=120).wait_for_completed()
+            # if abs(yaw_l[-1]-(-180)) >= 1 :
+            #     check_yaw(-180)
             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
             time.sleep(0.5)
-        # elif abs(yaw - yaw_l[-1]) >= 0.5 :   
-        #     check_yaw(yaw)
         if keyboard.is_pressed('q'):
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)  # Stop the robot
             ep_sensor_adaptor.unsub_adapter()
@@ -255,52 +322,6 @@ def move_rside(l_tof,axis,s):
             ep_robot.close()
             break
 
-def move_rside(l_tof,axis,s):
-    yaw = find_closest_value(yaw_l[-1],l_z)
-    print(yaw)
-    while True:
-        if (ad['left'][-1] != 'empty' and ad['right'][-1] != 'empty'):
-            # center_cal(ad['left'][-1], ad['right'][-1]) 
-            center_reset(ad['left'][-1], ad['right'][-1])
-        if s[1]==0:
-            ep_chassis.drive_wheels(w1=speed, w2=speed, w3=speed, w4=speed)
-        if ad['right'][-1] == 'empty' and s[1]== 0 and (ad['left'][-1] != 'empty' or ad['left'][-1] == 'empty') :#(s[2]==0 and s[0]==1 and s[1]== 0)
-            ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
-            time.sleep(0.5)
-            ep_chassis.move(x=0.15, y=0, z=0, xy_speed=0.5).wait_for_completed()
-            ep_chassis.move(x=0, y=0, z=-89.5, z_speed=120).wait_for_completed()
-            ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
-            ep_chassis.move(x=0.5, y=0, z=0, xy_speed=0.7).wait_for_completed()
-            time.sleep(0.5)
-        if ad['right'][-1] == 'empty' and s[1] == 1 and (ad['left'][-1] != 'empty' or ad['left'][-1] == 'empty') :#(s[2]==0 and s[0]==1 and s[1]== 1) :
-            ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
-            time.sleep(0.5)
-            ep_chassis.move(x=0, y=0, z=-89.5, z_speed=120).wait_for_completed()
-            ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
-            ep_chassis.move(x=0.55, y=0, z=0, xy_speed=0.7).wait_for_completed()
-            time.sleep(0.5)
-        if ad['right'][-1] != 'empty' and s[1] == 1 and ad['left'][-1] == 'empty':#(s[0] == 0 and s[1]==1 and s[2]==1)
-            ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
-            time.sleep(0.5)
-            ep_chassis.move(x=0, y=0, z=90, z_speed=120).wait_for_completed()
-            ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
-            time.sleep(0.5)
-        if ad['right'][-1] != 'empty' and s[1] == 1 and ad['left'][-1] != 'empty':#s[0] == 1 and s[1] == 1 and s[2] == 1
-            ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
-            time.sleep(0.5)
-            ep_chassis.move(x=0, y=0, z=180, z_speed=120).wait_for_completed()
-            ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
-            time.sleep(0.5)
-        # elif abs(yaw - yaw_l[-1]) >= 0.5 :   
-        #     check_yaw(yaw)
-        if keyboard.is_pressed('q'):
-            ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)  # Stop the robot
-            ep_sensor_adaptor.unsub_adapter()
-            ep_sensor.unsub_distance()
-            ep_chassis.unsub_position()
-            ep_robot.close()
-            break
-        
 def move_forward(l_tof, axis, s):
     lst_c_pos = {'x_c': [], 'y_c': []}
     if s[1] == 0:
@@ -325,6 +346,7 @@ def turnback():
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
 
 if __name__ == '__main__':
+    
     ep_robot = robot.Robot()
     ep_robot.initialize(conn_type="ap")
     ep_chassis = ep_robot.chassis
@@ -340,11 +362,11 @@ if __name__ == '__main__':
 
     while True:
         if s[1] == 0:
-            move_rside(l_tof, axis, s)
+            move_lside(l_tof, axis, s)
         if keyboard.is_pressed('q'):
             print("Stopping the robot and exiting the loop...")
             break
-        time.sleep(5)
+        
 
 
 
