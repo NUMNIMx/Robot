@@ -13,27 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import time
-import robomaster
-from robomaster import robot
 import cv2
+import time
+from robomaster import robot
+from robomaster import camera
+def save_scv(ep_camera):
+    f = ep_camera.read_cv2_image(strategy="newest") 
+    cv2.imwrite('captured_image5.jpg', f)
+    print("capture complete")
 
 
 if __name__ == '__main__':
     ep_robot = robot.Robot()
-    ep_robot.initialize(conn_type="ap")
+    ep_robot.initialize(conn_type="ap", proto_type="udp")
 
     ep_camera = ep_robot.camera
 
-    # 每次获取最新的1帧图像显示，并停留1秒
-    ep_camera.start_video_stream(display=False)
-    for i in range(0, 10):
-        img = ep_camera.read_cv2_image(strategy="newest")
-        cv2.imshow("Robot", img)
-        cv2.waitKey(1)
-        time.sleep(1)
-    cv2.destroyAllWindows()
+    # 显示十秒图传
+    start = time.time()
+    ep_camera.start_video_stream(display=True, resolution=camera.STREAM_720P)
+    end = time.time()
+    print(end-start)
+    time.sleep(3)
+    save_scv(ep_camera)
+    
     ep_camera.stop_video_stream()
-
     ep_robot.close()

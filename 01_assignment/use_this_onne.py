@@ -271,51 +271,40 @@ def check_yaw(yaw_t):
 #             break
 
 def move_lside(l_tof,axis,s):
-    
     while True:
         if (ad['left'][-1] != 'empty' and ad['right'][-1] != 'empty'):
-            # center_cal(ad['left'][-1], ad['right'][-1]) 
             center_reset(ad['left'][-1], ad['right'][-1])
         if s[1]==0:
             ep_chassis.drive_wheels(w1=speed, w2=speed, w3=speed, w4=speed)
-        if ad['left'][-1] == 'empty' and s[1]== 0 and (ad['right'][-1] != 'empty' or ad['right'][-1] == 'empty') :#(s[2]==0 and s[0]==1 and s[1]== 0)
+        if ad['left'][-1] == 'empty' and s[1]== 0 and (ad['right'][-1] != 'empty' or ad['right'][-1] == 'empty'):
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             time.sleep(0.5)
             ep_chassis.move(x=0.12, y=0, z=0, xy_speed=0.5).wait_for_completed()
             ep_chassis.move(x=0, y=0, z=89.5, z_speed=120).wait_for_completed()
-            # if abs(yaw_l[-1]+(-90)) >= 1 :
-            #     check_yaw(90)
             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
             ep_chassis.move(x=0.5, y=0, z=0, xy_speed=0.7).wait_for_completed()
             time.sleep(0.5)
-        if ad['left'][-1] == 'empty' and s[1] == 1 and (ad['right'][-1] != 'empty' or ad['right'][-1] == 'empty') :#(s[2]==0 and s[0]==1 and s[1]== 1) :
+        if ad['left'][-1] == 'empty' and s[1] == 1 and (ad['right'][-1] != 'empty' or ad['right'][-1] == 'empty'):
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             time.sleep(0.5)
             ep_chassis.move(x=0, y=0, z=89.5, z_speed=120).wait_for_completed()
-            # if abs(yaw_l[-1]+(-90)) >= 1 :
-            #     check_yaw(90)
             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
             ep_chassis.move(x=0.55, y=0, z=0, xy_speed=0.7).wait_for_completed()
             time.sleep(0.5)
-        if ad['left'][-1] != 'empty' and s[1] == 1 and ad['right'][-1] == 'empty':#(s[0] == 0 and s[1]==1 and s[2]==1)
+        if ad['left'][-1] != 'empty' and s[1] == 1 and ad['right'][-1] == 'empty':
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             time.sleep(0.5)
-            
             ep_chassis.move(x=0, y=0, z=-90, z_speed=120).wait_for_completed()
-            # if abs(yaw_l[-1]-(-90)) >= 1 :
-            #     check_yaw(-90)
             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
             time.sleep(0.5)
-        if ad['right'][-1] != 'empty' and s[1] == 1 and ad['left'][-1] != 'empty':#s[0] == 1 and s[1] == 1 and s[2] == 1
+        if ad['right'][-1] != 'empty' and s[1] == 1 and ad['left'][-1] != 'empty':
             ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             time.sleep(0.5)
             ep_chassis.move(x=0, y=0, z=180, z_speed=120).wait_for_completed()
-            # if abs(yaw_l[-1]-(-180)) >= 1 :
-            #     check_yaw(-180)
             ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
             time.sleep(0.5)
         if keyboard.is_pressed('q'):
-            ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)  # Stop the robot
+            ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             ep_sensor_adaptor.unsub_adapter()
             ep_sensor.unsub_distance()
             ep_chassis.unsub_position()
