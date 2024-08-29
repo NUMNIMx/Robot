@@ -10,6 +10,8 @@ HSL_image = cv2.cvtColor(r_image,cv2.COLOR_BGR2HSV)
 lower_red = np.array([0, 100, 100])
 upper_red = np.array([10, 255, 255])
 #inrage คือฟังชั้นเทรชโอส ก็คือง่าย if elif กำหนดค่า 
-mask = cv2.inRange(HSL_image,lower_red,upper_red)
+mask = cv2.inRange(HSL_image, lower_red, upper_red)
+#kernel operation สร้างm5*5 ทั้งหมดเป็น1 unit 8 = 8bit 255
+kernel = np.ones((5, 5), np.uint8)
 cv2.imshow('image test', mask)
 cv2.waitKey(0)
