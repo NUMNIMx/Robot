@@ -30,7 +30,7 @@ def detect_coke_can(image):
 
 def main():
     # อ่านภาพ (แทนที่ 'path_to_image.jpg' ด้วยพาธของภาพของคุณ)
-    image = cv2.imread('path_to_image.jpg')
+    image = cv2.imread('D:\Subject\Robot Ai\Robot_group\Robot_old_too\lab_05\coke.png')
     
     # ตรวจจับกระป๋องโค้ก
     result, mask = detect_coke_can(image)
