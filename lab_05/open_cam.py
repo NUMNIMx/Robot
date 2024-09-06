@@ -35,7 +35,7 @@ def main():
     ep_robot.initialize(conn_type="ap")
     ep_camera = ep_robot.camera
     
-    ep_camera.start_video_stream(display=False,resolution=camera.STREAM_720P)
+    ep_camera.start_video_stream(display=True,resolution=camera.STREAM_720P)
     
     while True:
         img = ep_camera.read_cv2_image()

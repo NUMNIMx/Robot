@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 #เทสรูป
-image = r'E:\Users\Home\Desktop\New folder (12)\Robot\lab_4_immage\coke.webp'
+image = r'D:\Subject\Robot Ai\Robot_group\Robot_old_too\lab_4_immage\coke.webp'
 r_image = cv2.imread(image)
 #เปลี่ยนเป็นHSL
 HSL_image = cv2.cvtColor(r_image,cv2.COLOR_BGR2HSV)
