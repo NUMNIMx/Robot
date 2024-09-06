@@ -1,25 +1,28 @@
 import cv2
-import numpy as np
 
-# โหลดภาพต้นฉบับและภาพที่เป็น template
-source_image = cv2.imread('source_image.jpg')
-template = cv2.imread('template_image.jpg')
+# โหลดภาพหลักและภาพเทมเพลต
+image = cv2.imread('D:\Subject\Robot Ai\Robot_group\Robot_old_too\coke01.jpg')
+template = cv2.imread('D:\Subject\Robot Ai\Robot_group\Robot_old_too\lab_05\coke.png')
+(h_t, w_t) = template.shape[:2]
 
-# ขนาดของ template
-(tH, tW) = template.shape[:2]
+# แปลงภาพหลักเป็นเทา (สำหรับการค้นหาแบบเทมเพลต)
+gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+gray_template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
 
-# ทำ Template Matching โดยใช้ cv2.matchTemplate
-result = cv2.matchTemplate(source_image, template, cv2.TM_CCOEFF_NORMED)
+# ทำ Template Matching
+result = cv2.matchTemplate(gray_image, gray_template, cv2.TM_CCOEFF_NORMED)
 
-# กำหนดค่าความคล้าย (threshold) เพื่อหาจุดที่ตรงกัน
-threshold = 0.8
-locations = np.where(result >= threshold)
+# หาตำแหน่งที่ดีที่สุด
+(min_val, max_val, min_loc, max_loc) = cv2.minMaxLoc(result)
 
-# วาดกรอบสี่เหลี่ยมล้อมรอบ template ที่พบ
-for pt in zip(*locations[::-1]):
-    cv2.rectangle(source_image, pt, (pt[0] + tW, pt[1] + tH), (0, 255, 0), 2)
+# กำหนดค่าพื้นฐานของพื้นที่ที่มีการจับคู่
+(startX, startY) = max_loc
+(endX, endY) = (startX + w_t, startY + h_t)
 
-# แสดงผลลัพธ์
-cv2.imshow('Detected', source_image)
+# วาดกรอบสี่เหลี่ยมล้อมรอบเทมเพลต
+cv2.rectangle(image, (startX, startY), (endX, endY), (0, 255, 0), 2)
+
+# แสดงภาพที่มีกรอบสี่เหลี่ยม
+cv2.imshow('Detected', image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
