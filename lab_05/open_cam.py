@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from robomaster import robot
+from robomaster import camera
 
 def detect_coke_can(image):
     # แปลง BGR เป็น HSV
@@ -29,17 +31,36 @@ def detect_coke_can(image):
     return result, mask
 
 def main():
-    # อ่านภาพ (แทนที่ 'path_to_image.jpg' ด้วยพาธของภาพของคุณ)
-    image = cv2.imread('D:\Subject\Robot Ai\Robot_group\Robot_old_too\lab_05\coke.png')
+    ep_robot = robot.Robot()
+    ep_robot.initialize(conn_type="ap")
+    ep_camera = ep_robot.camera
     
-    # ตรวจจับกระป๋องโค้ก
-    result, mask = detect_coke_can(image)
+    ep_camera.start_video_stream(display=False,resolution=camera.STREAM_720P)
     
-    # แสดงผลลัพธ์
-    cv2.imshow('Original Image', image)
-    cv2.imshow('Detected Coke Can', result)
-    cv2.imshow('Mask', mask)
-    cv2.waitKey(0)
+    while True:
+        img = ep_camera.read_cv2_image()
+        if img is None:
+            continue
+        
+        processed_img, mask = detect_coke_can(img)
+        
+        # หา contours ของวัตถุที่ตรวจพบ
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        # วาดกรอบรอบวัตถุที่ตรวจพบ (ถ้ามี)
+        if contours:
+            largest_contour = max(contours, key=cv2.contourArea)
+            x, y, w, h = cv2.boundingRect(largest_contour)
+            cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        
+        cv2.imshow("Original", img)
+        cv2.imshow("Processed", processed_img)
+        
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    
+    ep_camera.stop_video_stream()
+    ep_robot.close()
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
