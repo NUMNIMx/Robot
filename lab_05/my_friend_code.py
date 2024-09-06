@@ -7,7 +7,8 @@ import time
 import numpy as np
 from scipy.spatial.distance import cosine
 import matplotlib.pyplot as plt
-
+lower_red = np.array([0, 100, 100])
+upper_red = np.array([10, 255, 255])
 ## 7.2 -7.8
 lst_score = []
 count_f = 0
@@ -93,9 +94,9 @@ if __name__ == "__main__":
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
     time.sleep(1)
 
-    p = 0.4705
-    i = 1.1192
-    d = 0.0494
+    p = 0.83/1.7
+    i= p/(0.6/2)
+    d = p*(0.6/8)
     boom = True
 
     accumulate_err_x = 0

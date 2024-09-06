@@ -112,9 +112,9 @@ if __name__ == "__main__":
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
     time.sleep(1)
 
-    p = 0.4705
-    i = 1.1192
-    d = 0.0494
+    p = 0.83/1.7
+    i= p/(0.6/2)
+    d = p*(0.6/8)
     boom = True
 
     accumulate_err_x = 0
@@ -123,7 +123,8 @@ if __name__ == "__main__":
     prev_time = time.time()
     prev_err_x = 0
     prev_err_y = 0
-    
+    lower_red = np.array([0, 100, 100])
+    upper_red = np.array([10, 255, 255])    
     while True:
         img = ep_camera.read_cv2_image(strategy="newest", timeout=0.5)
         marker, score = detect_coke_can(img)
@@ -163,13 +164,6 @@ if __name__ == "__main__":
                 print(result)
                 lst_score = []
 
-            # Generate binary mask for visualization
-            hsv_image = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            mask = cv2.inRange(hsv_image, lower_red1, upper_red1)
-            binary_mask = (mask > 0).astype(np.uint8)
-            
-            # Visualize detection
-            visualize_detection(img, binary_mask)
 
         else:
             ep_gimbal.drive_speed(pitch_speed=0, yaw_speed=0)

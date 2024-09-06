@@ -19,7 +19,7 @@ from robomaster import robot
 from robomaster import camera
 def save_scv(ep_camera):
     f = ep_camera.read_cv2_image(strategy="newest") 
-    cv2.imwrite('captured_image5.jpg', f)
+    cv2.imwrite('coke03.jpg', f)
     print("capture complete")
 
 
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     ep_camera.start_video_stream(display=True, resolution=camera.STREAM_720P)
     end = time.time()
     print(end-start)
-    time.sleep(3)
+    time.sleep(10)
     save_scv(ep_camera)
     
     ep_camera.stop_video_stream()
