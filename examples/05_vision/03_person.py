@@ -1,76 +1,75 @@
-# -*-coding:utf-8-*-
-# Copyright (c) 2020 DJI.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License in the file LICENSE.txt or at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
 import cv2
+import numpy as np
 import robomaster
 from robomaster import robot
-from robomaster import vision
 
+def display_image(image):
+    cv2.imshow('Detected', image)
+    cv2.waitKey(1)  # เปลี่ยนเป็นรอเพียง 1ms เพื่อให้การทำงานเป็นแบบเรียลไทม์
+    cv2.destroyAllWindows()
 
-class PersonInfo:
+def detect_red_coke_can(image):
+    # แปลงภาพเป็นสี HSV
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    
+    # กำหนดขอบเขตของสีแดงใน HSV
+    lower_red1 = np.array([0, 50, 50])
+    upper_red1 = np.array([10, 255, 255])
+    lower_red2 = np.array([170, 50, 50])
+    upper_red2 = np.array([180, 255, 255])
 
-    def __init__(self, x, y, w, h):
-        self._x = x
-        self._y = y
-        self._w = w
-        self._h = h
+    # สร้างหน้ากากสำหรับสีแดง
+    mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
+    mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
+    mask = mask1 | mask2
 
-    @property
-    def pt1(self):
-        return int((self._x - self._w / 2) * 1280), int((self._y - self._h / 2) * 720)
+    # หาขอบเขตของวัตถุที่ตรวจพบ
+    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    @property
-    def pt2(self):
-        return int((self._x + self._w / 2) * 1280), int((self._y + self._h / 2) * 720)
+    # ค่าตัวแปรสำหรับกรอบที่ใหญ่ที่สุด
+    max_area = 0
+    best_box = None
 
-    @property
-    def center(self):
-        return int(self._x * 1280), int(self._y * 720)
+    # วาดกรอบสี่เหลี่ยมรอบ ๆ ขอบเขตที่ตรวจพบและเลือกกรอบที่ใหญ่ที่สุด
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if area > 500:  # ตรวจสอบขนาดวัตถุขั้นต่ำ
+            if area > max_area:
+                max_area = area
+                x, y, w, h = cv2.boundingRect(contour)
+                best_box = (x, y, w, h)
 
+    # วาดกรอบที่ใหญ่ที่สุดลงในภาพ
+    if best_box is not None:
+        x, y, w, h = best_box
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
-persons = []
-
-
-def on_detect_person(person_info):
-    number = len(person_info)
-    persons.clear()
-    for i in range(0, number):
-        x, y, w, h = person_info[i]
-        persons.append(PersonInfo(x, y, w, h))
-        print("person: x:{0}, y:{1}, w:{2}, h:{3}".format(x, y, w, h))
-
+    return image
 
 if __name__ == '__main__':
+    # เริ่มต้นใช้งาน DJI Robomaster
     ep_robot = robot.Robot()
-    ep_robot.initialize(conn_type="sta")
+    ep_robot.initialize(conn_type="ap")
 
-    ep_vision = ep_robot.vision
     ep_camera = ep_robot.camera
+    ep_camera.start_video_stream(display=False)
 
-    ep_camera.start_video_stream(False)
-    result = ep_vision.sub_detect_info(name="person", callback=on_detect_person)
+    try:
+        while True:
+            # อ่านภาพจากกล้องของ DJI Robomaster
+            image = ep_camera.read_cv2_image(strategy="newest", timeout=0.5)
 
-    for i in range(0, 500):
-        img = ep_camera.read_cv2_image(strategy="newest", timeout=0.5)
-        for j in range(0, len(persons)):
-            cv2.rectangle(img, persons[j].pt1, persons[j].pt2, (255, 255, 255))
-        cv2.imshow("Persons", img)
-        cv2.waitKey(1)
-    cv2.destroyAllWindows()
-    result = ep_vision.unsub_detect_info(name="person")
-    cv2.destroyAllWindows()
-    ep_camera.stop_video_stream()
-    ep_robot.close()
+            if image is not None:
+                # ตรวจจับกระป๋องโค้กสีแดง
+                result_image_with_red_detection = detect_red_coke_can(image)
+
+                # แสดงผลลัพธ์
+                display_image(result_image_with_red_detection)
+            
+            if cv2.waitKey(1) & 0xFF == ord('q'):  # กด 'q' เพื่อหยุดการทำงาน
+                break
+    finally:
+        # หยุดการทำงานของกล้องและปิดการเชื่อมต่อ
+        ep_camera.stop_video_stream()
+        ep_robot.close()
+        cv2.destroyAllWindows()

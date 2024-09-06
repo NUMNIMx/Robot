@@ -62,6 +62,6 @@ def main():
     ep_camera.stop_video_stream()
     ep_robot.close()
     cv2.destroyAllWindows()
-
+   
 if __name__ == "__main__":
     main()
