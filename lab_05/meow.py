@@ -8,9 +8,16 @@ from robomaster import blaster
 import time
 import matplotlib.pyplot as plt
 
-# โหลดเทมเพลตภาพ (ต้องเป็นภาพของกระป๋องโค้ก)
-template = cv2.imread('D:\Subject\Robot Ai\Robot_group\Robot_old_too\Coke_template01-removebg-preview.png', cv2.IMREAD_GRAYSCALE)
-template_w, template_h = template.shape[::-1]
+# โหลดเทมเพลตภาพหลายตัว
+template_paths = [
+    'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Coke_template01.jpg',
+    'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Coke_template02.jpg',
+    'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Coke_template03.jpg',
+    'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Coke_template04.jpg'
+]
+
+templates = [cv2.imread(path, cv2.IMREAD_GRAYSCALE) for path in template_paths]
+template_sizes = [template.shape[::-1] for template in templates]
 
 lst_score = []
 count_f = 0
@@ -50,44 +57,55 @@ def detect_coke_can(image):
     mask2 = cv2.inRange(hsv_image, lower_red2, upper_red2)
     mask = cv2.bitwise_or(mask1, mask2)
     
-    # ตรวจจับด้วยเทมเพลต
-    result = cv2.matchTemplate(mask, template, cv2.TM_CCOEFF_NORMED)
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-    
-    threshold = 0.72
-    if max_val >= threshold:
-        x, y = max_loc
-        best_box = (x, y, template_w, template_h)
-        best_score = max_val
-        cv2.rectangle(image, (x, y), (x + template_w, y + template_h), (0, 255, 0), 2)
-        return CokeCanMarker(x, y, template_w, template_h, best_score), best_score
-
-    # ใช้การคำนวณความคล้ายคลึงของโคไซน์ในกรณีที่เทมเพลตไม่พบ
-    anchor_boxes = [(template_w, template_h)]
     best_score = -1
     best_box = None
-    stride = 20
-    padding = 10
-
-    padded_mask = np.pad(mask, ((padding, padding), (padding, padding)), mode='constant', constant_values=0)
+    best_template_size = None
+    best_template_index = None
     
-    for (box_w, box_h) in anchor_boxes:
-        for y in range(padding, padded_mask.shape[0] - box_h - padding, stride):
-            for x in range(padding, padded_mask.shape[1] - box_w - padding, stride):
-                window = padded_mask[y:y+box_h, x:x+box_w]
-                window_vector = window.flatten()
-                target_vector = np.ones_like(window_vector)
-                
-                window_norm = np.linalg.norm(window_vector)
-                target_norm = np.linalg.norm(target_vector)
-                if window_norm == 0 or target_norm == 0:
-                    continue
-                
-                similarity = 1 - cosine(window_vector / window_norm, target_vector / target_norm)
-                
-                if 0.72 < similarity < 0.85 and similarity > best_score:
-                    best_score = similarity
-                    best_box = (x - padding, y - padding, box_w, box_h)
+    # ตรวจจับด้วยเทมเพลตหลายตัว
+    for index, template in enumerate(templates):
+        template_w, template_h = template_sizes[index]
+        result = cv2.matchTemplate(mask, template, cv2.TM_CCOEFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+        
+        threshold = 0.72
+        if max_val >= threshold:
+            x, y = max_loc
+            box_w, box_h = template_w, template_h
+            best_score = max_val
+            best_box = (x, y, box_w, box_h)
+            best_template_size = (box_w, box_h)
+            best_template_index = index
+            cv2.rectangle(image, (x, y), (x + box_w, y + box_h), (0, 255, 0), 2)
+            break
+
+    if best_box is None:
+        # ใช้การคำนวณความคล้ายคลึงของโคไซน์ในกรณีที่เทมเพลตไม่พบ
+        anchor_boxes = [(w, h) for w, h in template_sizes]
+        best_score = -1
+        best_box = None
+        stride = 10
+        padding = 25
+
+        padded_mask = np.pad(mask, ((padding, padding), (padding, padding)), mode='constant', constant_values=0)
+        
+        for (box_w, box_h) in anchor_boxes:
+            for y in range(padding, padded_mask.shape[0] - box_h - padding, stride):
+                for x in range(padding, padded_mask.shape[1] - box_w - padding, stride):
+                    window = padded_mask[y:y+box_h, x:x+box_w]
+                    window_vector = window.flatten()
+                    target_vector = np.ones_like(window_vector)
+                    
+                    window_norm = np.linalg.norm(window_vector)
+                    target_norm = np.linalg.norm(target_vector)
+                    if window_norm == 0 or target_norm == 0:
+                        continue
+                    
+                    similarity = 1 - cosine(window_vector / window_norm, target_vector / target_norm)
+                    
+                    if 0.72 < similarity < 0.85 and similarity > best_score:
+                        best_score = similarity
+                        best_box = (x - padding, y - padding, box_w, box_h)
 
     if best_box:
         x, y, box_w, box_h = best_box
@@ -106,13 +124,13 @@ if __name__ == "__main__":
     center_x = 1280 / 2
     center_y = 720 / 2
     ep_camera.start_video_stream(display=False)
-    ep_gimbal.sub_angle(freq=10)
+    ep_gimbal.sub_angle(freq=50)
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
     time.sleep(1)
 
-    p = 0.83 / 1.7
-    i = p / (0.6 / 2)
-    d = p * (0.6 / 8)
+    p = 0.2
+    i = 0.02
+    d = 0.1
     boom = True
 
     accumulate_err_x = 0
@@ -173,10 +191,10 @@ if __name__ == "__main__":
     ep_camera.stop_video_stream()
     ep_robot.close()
 
-    x_point = [i for i in range(len(data_pith_yaw))]
-    y_point4 = [i[4] for i in data_pith_yaw]
+    # x_point = [i for i in range(len(data_pith_yaw))]
+    # y_point4 = [i[4] for i in data_pith_yaw]
 
-    plt.plot(x_point, y_point4)
-    plt.legend(["e x", "e y", "u x", "u y"])
-    plt.show()
-    plt.savefig("graph.png")
+    # plt.plot(x_point, y_point4)
+    # plt.legend(["e x", "e y", "u x", "u y"])
+    # plt.show()
+    # plt.savefig("graph.png")
