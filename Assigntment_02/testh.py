@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 
 # โหลดภาพหลักและภาพ template
-image = cv2.imread('/Users/seaconcoding/Desktop/robottest/Robot/lab_4_immage/a5_2.1floor.jpg')
-template = cv2.imread('p/Users/seaconcoding/Desktop/robottest/Robot/lab_4_immage/a5_.1floor.jpg')
+image = cv2.imread('/Users/seaconcoding/Desktop/robottest/Robot/lab_4_immage/a5_0floor.jpg')
+template = cv2.imread('/Users/seaconcoding/Desktop/robottest/Robot/Assigntment_02/kk/2.1.jpg')
 
 # แปลงภาพทั้งสองเป็นขาวดำเพื่อให้การจับคู่เร็วขึ้น (สามารถข้ามขั้นตอนนี้ได้ถ้าไม่ต้องการ)
 image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
