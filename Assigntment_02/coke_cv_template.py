@@ -46,6 +46,7 @@ class CokeCanMarker:
     def text(self):
         return f"Score: {self._score:.2f}"
 
+# ฟังก์ชันตรวจจับกระป๋องโค้ก
 def detect_coke_can(image):
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     lower_red1 = np.array([0, 70, 50])
@@ -59,61 +60,49 @@ def detect_coke_can(image):
     
     best_score = -1
     best_box = None
-    best_template_size = None
-    best_template_index = None
     
-    # ตรวจจับด้วยเทมเพลตหลายตัว
+    # ขั้นตอน 1: ลองใช้การจับคู่เทมเพลต
     for index, template in enumerate(templates):
         template_w, template_h = template_sizes[index]
         result = cv2.matchTemplate(mask, template, cv2.TM_CCOEFF_NORMED)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-        
+        _, max_val, _, max_loc = cv2.minMaxLoc(result)
+
         threshold = 0.72
         if max_val >= threshold:
             x, y = max_loc
-            box_w, box_h = template_w, template_h
-            best_score = max_val
-            best_box = (x, y, box_w, box_h)
-            best_template_size = (box_w, box_h)
-            best_template_index = index
-            cv2.rectangle(image, (x, y), (x + box_w, y + box_h), (0, 255, 0), 2)
-            break
+            return CokeCanMarker(x, y, template_w, template_h, max_val), max_val
 
-    if best_box is None:
-        # ใช้การคำนวณความคล้ายคลึงของโคไซน์ในกรณีที่เทมเพลตไม่พบ
-        anchor_boxes = [(w, h) for w, h in template_sizes]
-        best_score = -1
-        best_box = None
-        stride = 50
-        padding = 50
+    # ขั้นตอน 2: หากการจับคู่เทมเพลตไม่สำเร็จ ใช้ cosine similarity
+    anchor_boxes = [(w, h) for w, h in template_sizes]
+    stride = 50
+    padding = 50
+    padded_mask = np.pad(mask, ((padding, padding), (padding, padding)), mode='constant', constant_values=0)
+    
+    for (box_w, box_h) in anchor_boxes:
+        for y in range(padding, padded_mask.shape[0] - box_h - padding, stride):
+            for x in range(padding, padded_mask.shape[1] - box_w - padding, stride):
+                window = padded_mask[y:y+box_h, x:x+box_w]
+                window_vector = window.flatten()
+                target_vector = np.ones_like(window_vector)
+                
+                window_norm = np.linalg.norm(window_vector)
+                target_norm = np.linalg.norm(target_vector)
+                if window_norm == 0 or target_norm == 0:
+                    continue
 
-        padded_mask = np.pad(mask, ((padding, padding), (padding, padding)), mode='constant', constant_values=0)
-        
-        for (box_w, box_h) in anchor_boxes:
-            for y in range(padding, padded_mask.shape[0] - box_h - padding, stride):
-                for x in range(padding, padded_mask.shape[1] - box_w - padding, stride):
-                    window = padded_mask[y:y+box_h, x:x+box_w]
-                    window_vector = window.flatten()
-                    target_vector = np.ones_like(window_vector)
-                    
-                    window_norm = np.linalg.norm(window_vector)
-                    target_norm = np.linalg.norm(target_vector)
-                    if window_norm == 0 or target_norm == 0:
-                        continue
-                    
-                    similarity = 1 - cosine(window_vector / window_norm, target_vector / target_norm)
-                    
-                    if 0.72 < similarity < 0.85 and similarity > best_score:
-                        best_score = similarity
-                        best_box = (x - padding, y - padding, box_w, box_h)
+                similarity = 1 - cosine(window_vector / window_norm, target_vector / target_norm)
+                
+                if 0.72 < similarity > best_score:
+                    best_score = similarity
+                    best_box = (x - padding, y - padding, box_w, box_h)
 
     if best_box:
         x, y, box_w, box_h = best_box
-        cv2.rectangle(image, (x, y), (x + box_w, y + box_h), (0, 255, 0), 2)
         return CokeCanMarker(x, y, box_w, box_h, best_score), best_score
 
     return None, None
 
+# ฟังก์ชันหลัก
 if __name__ == "__main__":
     ep_robot = robot.Robot()
     ep_robot.initialize(conn_type="ap")
@@ -153,9 +142,9 @@ if __name__ == "__main__":
             accumulate_err_x += err_x * (after_time - prev_time)
             accumulate_err_y += err_y * (after_time - prev_time)
 
+            # กรณีคะแนนถึงเกณฑ์ จะยิง blaster
             # if score >= 0.72:
             #     count_f += 1
-            #     print(count_f)
             #     if count_f == 20:
             #         ep_blaster.fire(fire_type=blaster.INFRARED_FIRE, times=1)
             #         count_f = 0
@@ -191,6 +180,7 @@ if __name__ == "__main__":
     ep_camera.stop_video_stream()
     ep_robot.close()
 
+    # การแสดงกราฟ (ถ้าต้องการ)
     # x_point = [i for i in range(len(data_pith_yaw))]
     # y_point4 = [i[4] for i in data_pith_yaw]
 

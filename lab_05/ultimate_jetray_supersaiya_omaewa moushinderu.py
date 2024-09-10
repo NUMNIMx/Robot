@@ -10,9 +10,7 @@ import matplotlib.pyplot as plt
 
 # โหลดเทมเพลตภาพหลายตัว
 template_paths = [
-    'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Coke_template01.jpg',
-    'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Coke_template02.jpg',
-    'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Coke_template03.jpg',
+    
     'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Coke_template04.jpg'
 ]
 
@@ -85,7 +83,7 @@ def detect_coke_can(image):
         best_score = -1
         best_box = None
         stride = 20
-        padding = 10
+        padding = 20
 
         padded_mask = np.pad(mask, ((padding, padding), (padding, padding)), mode='constant', constant_values=0)
         
@@ -128,9 +126,9 @@ if __name__ == "__main__":
     ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
     time.sleep(1)
 
-    p = 0.83 / 1.7
-    i = p / (0.6 / 2)
-    d = p * (0.6 / 8)
+    p = 0.65 / 2.2
+    i = 0#p / (0.6 / 2)
+    d = 0#p * (0.6 / 8)
     boom = True
 
     accumulate_err_x = 0
@@ -160,16 +158,16 @@ if __name__ == "__main__":
             #         ep_blaster.fire(fire_type=blaster.INFRARED_FIRE, times=1)
             #         count_f = 0
 
-            speed_x = p * err_x
-            speed_y = p * err_y
+            speed_x = (p * err_x)+ d*((err_x-prev_err_x)/(after_time-prev_time)) + i*accumulate_err_x
+            speed_y = (p * err_y)+ d*((err_y-prev_err_y)/(after_time-prev_time)) + i*accumulate_err_y
             ep_gimbal.drive_speed(pitch_speed=speed_y, yaw_speed=-speed_x)
-
+            time.sleep(0.001)
             data_pith_yaw.append([err_x, err_y, round(speed_x, 3), round(speed_y, 3), after_time - prev_time])
-
+            print(err_x,err_y,accumulate_err_x,accumulate_err_y)
             prev_time = after_time
             prev_err_x = err_x
             prev_err_y = err_y
-
+                ######
             cv2.rectangle(img, marker.pt1, marker.pt2, (0, 255, 0), 2)
             cv2.putText(img, marker.text, marker.center, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             time.sleep(0.001)
@@ -191,10 +189,10 @@ if __name__ == "__main__":
     ep_camera.stop_video_stream()
     ep_robot.close()
 
-    x_point = [i for i in range(len(data_pith_yaw))]
-    y_point4 = [i[4] for i in data_pith_yaw]
+    # x_point = [i for i in range(len(data_pith_yaw))]
+    # y_point4 = [i[4] for i in data_pith_yaw]
 
-    plt.plot(x_point, y_point4)
-    plt.legend(["e x", "e y", "u x", "u y"])
-    plt.show()
-    plt.savefig("graph.png")
+    # plt.plot(x_point, y_point4)
+    # plt.legend(["e x", "e y", "u x", "u y"])
+    # plt.show()
+    # plt.savefig("graph.png")

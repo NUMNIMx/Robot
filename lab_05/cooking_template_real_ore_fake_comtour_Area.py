@@ -1,8 +1,14 @@
 import cv2
-import numpy as np
-import time
+import robomaster
 from robomaster import robot
+from robomaster import vision
+from robomaster import blaster
 from robomaster import camera
+import time
+import numpy as np
+from scipy.spatial.distance import cosine
+import pandas as pd
+import matplotlib.pyplot as plt
 
 def display_image(image):
     cv2.imshow('Detected', image)
@@ -54,14 +60,21 @@ if __name__ == '__main__':
     # เริ่มการเชื่อมต่อกับ Robomaster
     ep_robot = robot.Robot()
     ep_robot.initialize(conn_type="ap", proto_type="udp")
-
+    ep_gimbal = ep_robot.gimbal
+    ep_vision = ep_robot.vision
     ep_camera = ep_robot.camera
-    ep_camera.start_video_stream(display=False, resolution=camera.STREAM_360P)
+    ep_camera.start_video_stream(display=False, resolution=camera.STREAM_720P)
+    ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
 
     try:
         while True:
             # อ่านเฟรมจากกล้อง
             frame = ep_camera.read_cv2_image(strategy="newest", timeout=0.5)
+            width = int(frame.shape[1]/3)
+            high = int(frame.shape[0]/3)
+            mask = np.zeros(frame.shape[:2], dtype="uint8")
+            cv2.rectangle(mask,(width, high), (width*2, high*2+100), 255, -1)
+            frame = cv2.bitwise_and(frame,frame, mask=mask)
             
             if frame is not None:
                 # ตรวจจับกระป๋องโค้กสีแดง
