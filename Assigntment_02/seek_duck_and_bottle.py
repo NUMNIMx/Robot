@@ -6,9 +6,6 @@ from robomaster import blaster
 from robomaster import camera
 import time
 import numpy as np
-from scipy.spatial.distance import cosine
-import pandas as pd
-import matplotlib.pyplot as plt
 lst_x = []
 def sub_position_handler(position_info):
     x, y, z  = position_info
