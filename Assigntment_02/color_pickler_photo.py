@@ -20,7 +20,7 @@ cv2.createTrackbar("Upper-S", "Color Picker", 255, 255, nothing)
 cv2.createTrackbar("Upper-V", "Color Picker", 255, 255, nothing)
 
 # อ่านรูปภา
-image_path = r"C:\Users\ItsPe\OneDrive\Pictures\Screenshots 1\Screenshot 2024-09-10 220108.png"  # เปลี่ยนเป็นพาธของรูปภาพของคุณ
+image_path = r"/Users/seaconcoding/Desktop/robottest/Robot/lab_06/coke_can_180.jpg"  # เปลี่ยนเป็นพาธของรูปภาพของคุณ
 frame = cv2.imread(image_path)
 
 if frame is None:
