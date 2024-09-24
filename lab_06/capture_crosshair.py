@@ -32,7 +32,7 @@ def draw_crosshair(frame):
 def save_scv(ep_camera):
     """Save an image from the camera feed."""
     frame = ep_camera.read_cv2_image(strategy="newest") 
-    cv2.imwrite('coke_can_100.jpg', frame)
+    cv2.imwrite('lab_06coke_can_125cm.jpg', frame)
     print("Capture complete.")
 
 if __name__ == '__main__':
