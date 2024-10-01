@@ -16,8 +16,8 @@ def kfinder(d120,d60,d180):
     kxf180= d180[0] * (180/5.8)
     kyf180 = d180[1] * (180/14.5)
     print(f'kx kxy ในระยะ 120{kxf120,kyf120}')
-    print(f'kx kxy ในระยะ 120{kxf180,kyf180}')
-    print(f'kx kxy ในระยะ 120{kxf60,kyf60}')
+    print(f'kx kxy ในระยะ 180{kxf180,kyf180}')
+    print(f'kx kxy ในระยะ 60{kxf60,kyf60}')
     mean_kx = (kxf120 + kxf180 +kxf60)/3
     mean_ky = (kyf120 + kyf180 +kyf60)/3
     return mean_kx, mean_ky
@@ -30,6 +30,7 @@ def zfinder(kx,ky,d75,d100,d125):
     zy125 = ky*14.5*1/d125[1]
     zx = [zx75,zx100,zx125]
     zy = [zy75,zy100,zy125]
+    print('แสดงค่า zx และ zy',zx,zy)
     return zx,zy
 
 if __name__ == "__main__":
@@ -48,17 +49,19 @@ if __name__ == "__main__":
     # เพิ่มชื่อแกนและชื่อกราฟ
     axs[0].set_title('Graph A: Scaled Measurements vs. Distance 60,120,180')
     axs[0].set_xlabel('1/Z')
-    axs[0].set_ylabel('D')
+    axs[0].set_ylabel('Distance')
 
     axs[0].legend()
 
 
-    axs[1].plot(sc_zx,[d75[0],d100[0],d125[0]],color = 'red', marker='o',label='1/zx (dx)')  # ใช้ marker='o' เพื่อแสดงจุดที่แต่ละค่า
-    axs[1].plot(sc_zy,[d75[1],d100[1],d125[1]],color = 'b', marker='x', label='1/zy (dy)')
+    axs[1].plot(sc_zx,[d75[0],d100[0],d125[0]],color = 'red', marker='o',label='1/zx (dx) 75 100 125')  # ใช้ marker='o' เพื่อแสดงจุดที่แต่ละค่า
+    axs[1].plot(sc_zy,[d75[1],d100[1],d125[1]],color = 'b', marker='x', label='1/zy (dy) 75 100 125')
+    axs[1].plot(sc_zxr,[d60[0],d120[0],d180[0]],color = 'purple', marker='o',label='1/zx (dx) 60 120 180')  # ใช้ marker='o' เพื่อแสดงจุดที่แต่ละค่า
+    axs[1].plot(sc_zyr,[d60[1],d120[1],d180[1]],color = 'orange', marker='x', label='1/zy (dy) 60 120 180')
     # เพิ่มชื่อแกนและชื่อกราฟ
-    axs[1].set_title('Graph F: Scaled Measurements vs. Distance 75,100,125 ')
+    axs[1].set_title('Graph F: Scaled Measurements vs. Distance 60,75,80,100,125,180 ')
     axs[1].set_xlabel('1/Z')
-    axs[1].set_ylabel('D')
+    axs[1].set_ylabel('Distance')
 
     axs[1].legend()
 
