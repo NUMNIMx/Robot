@@ -22,7 +22,7 @@ if __name__ == '__main__':
     ep_chassis = ep_robot.chassis
     ep_chassis.sub_position(freq=10, callback=sub_position_handler)
     
-    ref_x = 1
+    ref_x = 0.6
     ref_y = 0
     ep_chassis.move(x=ref_x, y=ref_y, z=0, xy_speed=0.6).wait_for_completed()
     
