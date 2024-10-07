@@ -35,14 +35,14 @@ def find_theif(image):
     
     return image, circles
 
-def find_theif_body(image, image1):
+def find_theif_body(image):
     # Compute the absolute difference between two frames
-    result = cv2.absdiff(image, image1)
+    result = cv2.COLOR_BAYER_BG2GRAY(image)
     blurred = cv2.GaussianBlur(result, (5, 5), 0)
     
     # Load the template image
     template = cv2.imread(r'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Assignment_03\bottleman_1_plate_led.jpg') 
-    
+    template = cv2.COLOR_BAYER_BG2GRAY(template)
     if template is None:
         print("Template image not found.")
         return result
@@ -93,9 +93,7 @@ if __name__ == '__main__':
             if frame is not None:
                 ep_blaster.set_led(brightness=32, effect=blaster.LED_ON)
                 time.sleep(1)
-                before = frame
-                after = ep_camera.read_cv2_image(strategy="newest", timeout=2)
-                im = find_theif_body(before, after)
+                im = find_theif_body(frame)
 
                 if not came(im):
                     break
