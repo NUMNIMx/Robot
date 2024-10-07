@@ -18,12 +18,15 @@ def came(image):
 # Detect blue circles (optimized)
 def find_theif(image):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower_blue = np.array([102, 123, 113])
-    upper_blue = np.array([179, 255, 255])
+    lower_blue = np.array([100, 150, 0])
+    upper_blue = np.array([140, 255, 255])
+    lower_blue2 = np.array([94, 147, 104])
+    upper_blue2= np.array([180, 229, 187])
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
-
+    mask2 = cv2.inRange(hsv, lower_blue2, upper_blue2)
+    mask=cv2.bitwise_or(mask,mask2)
     blurred = cv2.GaussianBlur(mask, (3, 3), 0)  # Smaller kernel for performance
-    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=1, minDist=10, param1=50, param2=20, minRadius=10, maxRadius=150)
+    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=1.2, minDist=50, param1=50, param2=30, minRadius=1, maxRadius=30)
 
     if circles is not None:
         circles = np.round(circles[0, :]).astype("int")
@@ -39,8 +42,8 @@ def detect_yellow_chickens(image):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     
     # Range for yellow color (adjusted)
-    lower_yellow = np.array([22,227,83])
-    upper_yellow = np.array([45,255,255])
+    lower_yellow = np.array([29,222,83])
+    upper_yellow = np.array([83,255,255])
     mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
     
     blurred = cv2.GaussianBlur(mask, (3, 3), 0)
@@ -71,7 +74,7 @@ def camera_thread(ep_camera, ep_gimbal, ep_blaster):
     center_y = 360 / 2
     p = 0.6 / 1.7
 
-    frame_skip = 2  # Process every second frame
+    frame_skip = 2  # Process every second frameq
     frame_count = 0
 
     try:
@@ -99,9 +102,10 @@ def camera_thread(ep_camera, ep_gimbal, ep_blaster):
                 frame = cv2.bitwise_and(frame, frame, mask=mask)
                 
                 # Detect blue circle (theif) and yellow chickens
-                result_image, circles = find_theif(frame)
-                result_image = detect_yellow_chickens(result_image)
+                
 
+                result_image, circles = find_theif(frame)
+                
                 if circles is not None:
                     for (x, y, r) in circles:
                         err_x = center_x - x
@@ -111,7 +115,7 @@ def camera_thread(ep_camera, ep_gimbal, ep_blaster):
                         speed_y = p * err_y
 
                         ep_gimbal.drive_speed(pitch_speed=speed_y, yaw_speed=-speed_x)
-
+                        
                 if not came(result_image):
                     break
 

@@ -25,7 +25,7 @@ def find_theif(image):
     mask = cv2.bitwise_or(mask, mask1)
     
     blurred = cv2.GaussianBlur(mask, (5, 5), 0)
-    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=1.2, minDist=50, param1=50, param2=30, minRadius=10, maxRadius=200)
+    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=1.2, minDist=50, param1=50, param2=30, minRadius=10, maxRadius=40)
 
     if circles is not None:
         circles = np.round(circles[0, :]).astype("int")
@@ -52,9 +52,9 @@ if __name__ == '__main__':
     center_x = 1280 / 2
     center_y = 720 / 2
 
-    p = 0.6 / 1.7
-    i = p / (0.7 / 2)
-    d = p * (0.7 / 8)
+    p = 0.6 / 2.2
+    i = 0#p / (0.7 / 2)
+    d = 0#p * (0.7 / 8)
 
     accumulate_err_x = 0
     accumulate_err_y = 0
