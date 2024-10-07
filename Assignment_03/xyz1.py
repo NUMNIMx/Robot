@@ -35,10 +35,10 @@ def find_theif(image):
             cv2.rectangle(image, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
     
     return image, circles
+
 def detect_yellow_chickens(image):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     
-    # ปรับช่วงสีให้เหมาะสมกับสีเหลืองของตุ๊กตาไก่
     lower_yellow = np.array([31, 132, 0])
     upper_yellow = np.array([42, 255, 241])
     lower_yellow2 = np.array([0,184,90])
@@ -51,50 +51,18 @@ def detect_yellow_chickens(image):
     
     for contour in contours:
         area = cv2.contourArea(contour)
-        if area > 100:  # ขนาดขั้นต่ำของวัตถุ
+        if area > 100:  # Minimum size of the object
             x, y, w, h = cv2.boundingRect(contour)
             detected_chickens.append((x, y, w, h+10, area))
     
-    # เรียงลำดับตามขนาดพื้นที่ (ใหญ่สุดก่อน)
     detected_chickens.sort(key=lambda x: x[4], reverse=True)
     
-    # วาดกรอบสี่เหลี่ยมรอบตุ๊กตาไก่ที่ตรวจพบ N ตัวแรก
-    N = 1  # ตรวจจับเพียงแค่ตุ๊กตาไก่ตัวเดียว
+    # Draw rectangle around the first N detected chickens
+    N = 1  # Detect only the largest chicken
     for i, (x, y, w, h, _) in enumerate(detected_chickens[:N]):
-        color = (0, 255, 255)  # สีเหลืองอ่อนสำหรับตัวใหญ่สุด
+        color = (0, 255, 255)
         cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
         cv2.putText(image, f'Chicken {i+1}', (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
-    
-    return image
-def find_theif_body(image, image1):
-    # Compute the absolute difference between two frames
-    result = cv2.absdiff(image, image1)
-    blurred = cv2.GaussianBlur(result, (5, 5), 0)
-    
-    # Load the template image
-    template = cv2.imread(r'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Assignment_03\tem_match.png') 
-    
-    if template is None:
-        print("Template image not found.")
-        return result
-    
-    # Get the width and height of the template
-    template_height, template_width = template.shape[:2]
-    
-    # Perform template matching
-    match_result = cv2.matchTemplate(blurred, template, cv2.TM_CCOEFF_NORMED)
-    
-    # Define a threshold to consider a match valid
-    threshold = 0.8
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(match_result)
-    
-    if max_val > threshold:
-        # If a match is found, draw a rectangle around the detected object
-        top_left = max_loc
-        bottom_right = (top_left[0] + template_width, top_left[1] + template_height)
-        cv2.rectangle(image, top_left, bottom_right, (0, 255, 0), 2)
-        cv2.putText(image, 'Thief Detected', (top_left[0], top_left[1] - 10), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
     
     return image
 
@@ -111,8 +79,8 @@ if __name__ == '__main__':
     center_y = 720 / 2
 
     p = 0.6 / 2.2
-    i = 0#p / (0.7 / 2)
-    d = 0#p * (0.7 / 8)
+    i = 0
+    d = 0
 
     accumulate_err_x = 0
     accumulate_err_y = 0
@@ -122,12 +90,12 @@ if __name__ == '__main__':
         while True:
             frame = ep_camera.read_cv2_image(strategy="newest", timeout=0.5)
             if frame is not None:
+                # Detect blue circles and yellow chickens
                 result_image, circles = find_theif(frame)
+                result_image = detect_yellow_chickens(result_image)
+                
                 ep_blaster.set_led(brightness=32, effect=blaster.LED_ON)
-                time.sleep(1)
-                before = frame
-                after = ep_camera.read_cv2_image(strategy="newest", timeout=2)
-                im = find_theif_body(before,after)
+                
                 if circles is not None:
                     for (x, y, r) in circles:
                         err_x = center_x - x
