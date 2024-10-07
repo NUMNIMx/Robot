@@ -23,7 +23,7 @@ def find_theif(image):
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
 
     blurred = cv2.GaussianBlur(mask, (3, 3), 0)  # Smaller kernel for performance
-    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=1.2, minDist=50, param1=50, param2=30, minRadius=10, maxRadius=150)
+    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=1, minDist=10, param1=50, param2=20, minRadius=10, maxRadius=150)
 
     if circles is not None:
         circles = np.round(circles[0, :]).astype("int")
