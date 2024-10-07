@@ -4,7 +4,9 @@ import keyboard
 from robomaster import robot
 import csv
 
-DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+DIRECTIONS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+DIRECTIONS2 = ['เหนือ','ตะวันออก','ใต้','ตะวันตก']
+current_index = 0
 l_tof = []
 s = [0, 0, 0]
 ad = {'left': [], 'right': []}
@@ -116,6 +118,7 @@ class Robomaster:
         self.junctions = []  # List to store junctions (multiple paths)
         self.path_history = []
         self.last_direction = []
+        self.robot_direction = DIRECTIONS2[current_index]
         self.exploration_complete = False
 
         ep_robot = robot.Robot()
@@ -138,35 +141,39 @@ class Robomaster:
         if direction == (0, -1):
             ep_gimbal.moveto(pitch=0, yaw=-90, yaw_speed=100).wait_for_completed()    
             tof = l_tof[-1]
+        if direction == (-1,0):
+            ep_gimbal.moveto(pitch=0, yaw=-180, yaw_speed=100).wait_for_completed()
+            tof = l_tof[-1]
         return tof      
 
     def is_path_clear(self, direction):
         path_clear = True
-        if direction == (0, 1):  # Right
-            if s[2] == 1:
-                if io['right'][-1] == 0:
-                    path_clear = False
-                elif io['right'][-1] == 1:
-                    tof = self.tof_check(direction)
-                    if tof <= 250:
+        if self.robot_direction == 'เหนือ':
+            if direction == (0, 1):  # Right
+                if s[2] == 1:
+                    if io['right'][-1] == 0:
                         path_clear = False
-
-        if direction == (0, -1):  # Left
-            if s[0] == 1:
-                if io['left'][-1] == 0:
-                    path_clear = False
-                elif io['left'][-1] == 1:
-                    tof = self.tof_check(direction)
-                    if tof <= 250:
+                    elif io['right'][-1] == 1:
+                        tof = self.tof_check(direction)
+                        if tof <= 250:
+                            path_clear = False
+            if direction == (0, -1):  # Left
+                if s[0] == 1:
+                    if io['left'][-1] == 0:
                         path_clear = False
-
-        if direction == (1, 0):  # Forward
-            if s[1] == 1:
-                path_clear = False
-
-        if direction == (-1, 0):  # Backward
-            if len(self.visited) < 2:
-                path_clear = False
+                    elif io['left'][-1] == 1:
+                        tof = self.tof_check(direction)
+                        if tof <= 250:
+                            path_clear = False
+            if direction == (1, 0):  # Forward
+                if s[1] == 1:
+                    path_clear = False
+            if direction == (-1, 0):  # Backward
+                if len(self.visited) > 2 :
+                    tof = self.tof_check(direction)
+                    if tof <= 250 :
+                        path_clear = False
+                
             
         return path_clear
     
@@ -179,6 +186,7 @@ class Robomaster:
             self.Move()
         if dx == -1 :
             self.backward()
+
     def center_reset(self,adl,adr):
         move = 0 
         if adl <= 5 :
@@ -199,28 +207,38 @@ class Robomaster:
                 ep_chassis.move(x=0, y=move, z=0, xy_speed=0.1)
                 print('move complete')
             time.sleep(3)
+
     def Move(self):
         ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
-        self.center_reset(ad['left'][-1],ad['right'[-1]])
+        if (ad['left'][-1] != 'empty' and ad['right'][-1] != 'empty'):    
+            self.center_reset(ad['left'][-1],ad['right'][-1])
         target_distance = 0.6  # Target distance to move forward
         ep_chassis.move(x=target_distance, y=0, z=0, xy_speed=0.6).wait_for_completed()
-        self.last_direction.append((1,0))
         time.sleep(1)
         self.explore_step()
 
     def turn_right(self):
         ep_chassis.move(x=0, y=0, z=-90, z_speed=100).wait_for_completed()
-        self.last_direction.append((0,1))
+        if (ad['left'][-1] != 'empty' and ad['right'][-1] != 'empty'):    
+            self.center_reset(ad['left'][-1],ad['right'][-1])
+        global current_index
+        current_index = (current_index+1)%4
         self.Move()
 
     def turn_left(self):
         ep_chassis.move(x=0, y=0, z=90, z_speed=100).wait_for_completed()
-        self.last_direction.append((0,-1))
+        if (ad['left'][-1] != 'empty' and ad['right'][-1] != 'empty'):    
+            self.center_reset(ad['left'][-1],ad['right'][-1])
+        global current_index
+        current_index = (current_index-1)%4
         self.Move()
 
     def backward(self):
         ep_chassis.move(x=0, y=0, z=-180, z_speed=100).wait_for_completed()
-        self.last_direction.append((-1,0))
+        if (ad['left'][-1] != 'empty' and ad['right'][-1] != 'empty'):    
+            self.center_reset(ad['left'][-1],ad['right'][-1])
+        global current_index
+        current_index = (current_index+2)%4
         self.Move()
 
     def explore_step(self):
@@ -235,15 +253,13 @@ class Robomaster:
         for direction in DIRECTIONS:
             dx, dy = direction
             if direction in [(1,0),(-1,0),(0,1),(0,-1)] :
-                if len(self.last_direction) == 0:
-                    self.last_direction.append((0,0))
-                if self.last_direction[-1] == (1,0) or self.last_direction[-1] == (0,0):
+                if self.robot_direction == 'เหนือ':
                     new_position = (x + dx, y + dy)
-                if self.last_direction[-1] == (-1,0):
+                if self.robot_direction == 'ใต้':
                     new_position = (x - dx, y - dy)
-                if self.last_direction[-1] == (0,1):
+                if self.robot_direction == 'ตะวันออก':
                     new_position = (x - dy, y + dx)
-                if self.last_direction[-1] == (0,-1):
+                if self.robot_direction == 'ตะวันตก':
                     new_position = (x + dy, y - dx )
             if self.is_path_clear(direction) and new_position not in self.visited:
                 n+=1
