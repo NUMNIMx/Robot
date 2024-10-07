@@ -64,6 +64,31 @@ def detect_yellow_chickens(image):
     
     return image
 
+# Function to detect movement by comparing frames
+def find_theif_body(image1, image2):
+    # Compute the absolute difference between two frames
+    result = cv2.absdiff(image1, image2)
+    blurred = cv2.GaussianBlur(result, (5, 5), 0)
+
+    # Find contours
+    contours, _ = cv2.findContours(blurred, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if area > 200:  # Minimum area threshold
+            x, y, w, h = cv2.boundingRect(contour)
+            cv2.rectangle(image1, (x, y), (x + w, y + h), (0, 0, 255), 2)
+            cv2.putText(image1, 'Movement Detected', (x, y-10), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+
+    return image1
+
+# Control the LED when detecting an object
+def light_when_detected(ep_blaster, detection):
+    if detection:  # เมื่อพบวัตถุ เปิด LED
+        ep_blaster.set_led(brightness=255, effect=blaster.LED_ON)
+    else:  # ถ้าไม่พบวัตถุ ปิด LED
+        ep_blaster.set_led(brightness=0, effect=blaster.LED_OFF)
 
 # Thread for handling camera frames
 def camera_thread(ep_camera, ep_gimbal, ep_blaster):
@@ -73,6 +98,7 @@ def camera_thread(ep_camera, ep_gimbal, ep_blaster):
 
     frame_skip = 2  # Process every second frame
     frame_count = 0
+    before = None
 
     try:
         while True:
@@ -83,24 +109,21 @@ def camera_thread(ep_camera, ep_gimbal, ep_blaster):
             frame = ep_camera.read_cv2_image(strategy="newest", timeout=0.5)
             if frame is not None:
                 frame = cv2.resize(frame, (640, 360))  # Resize for faster processing
-                
-                # Crop the frame using a mask
-                width = int(frame.shape[1] / 3)
-                height = int(frame.shape[0] / 3)
-                left_margin = 100
-                right_margin = 100
 
-                mask = np.zeros(frame.shape[:2], dtype="uint8")
-                cv2.rectangle(mask, 
-                            (width - left_margin, height), 
-                            (width * 2 + right_margin, height * 2 + 250), 
-                            255, -1)
+                if before is None:
+                    before = frame  # Save the first frame for comparison
+                    continue
 
-                frame = cv2.bitwise_and(frame, frame, mask=mask)
-                
                 # Detect blue circle (theif) and yellow chickens
                 result_image, circles = find_theif(frame)
                 result_image = detect_yellow_chickens(result_image)
+
+                after = frame
+                result_image = find_theif_body(before, after)  # Compare before and after frame for movement
+                before = after  # Update for next comparison
+
+                # If blue circles are detected, activate LED
+                light_when_detected(ep_blaster, circles is not None)
 
                 if circles is not None:
                     for (x, y, r) in circles:
