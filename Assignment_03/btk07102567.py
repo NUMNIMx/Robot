@@ -301,7 +301,7 @@ class Robomaster:
             self.move_in_direction(-dx, -dy)
             if len(self.path_history) == 0:
                 self.position = self.junctions.pop()
-            return
+                return
 
         dx, dy = possible_moves[0]
         self.position = (x + dx, y + dy)

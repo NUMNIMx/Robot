@@ -51,7 +51,7 @@ if __name__ == '__main__':
     while True:
         # Get the latest frame from the camera
         frame = ep_camera.read_cv2_image(strategy="newest")
-        ep_blaster.set_led(brightness=64, effect=blaster.LED_ON)
+        ep_blaster.set_led(brightness=32, effect=blaster.LED_ON)
         time.sleep(1)
         if frame is not None:
             # Draw the crosshair on the frame

@@ -27,7 +27,7 @@ def sub_data_handler(sub_info):
 def state(tof, charp):
     min_charp = 20
     if len(tof) > 0:
-        if tof[-1] <= 280:
+        if tof[-1] <= 330:
             s[1] = 1
         else:
             s[1] = 0
@@ -185,7 +185,7 @@ class Robomaster:
                 if len(self.visited) < 2 :
                     tof = self.tof_check(direction)
                     time.sleep(0.4)
-                    if tof <= 250 :
+                    if tof <= 300 :
                         path_clear = False
                     else :
                         path_clear = True
@@ -348,6 +348,8 @@ class Robomaster:
         if (ad['left'][-1] != 'empty' and ad['right'][-1] != 'empty'):    
             print(ad['left'][-1],ad['right'][-1])
             self.center_reset(ad['left'][-1],ad['right'][-1])
+        if len(self.path_history) == 0:
+                self.position = self.junctions.pop()
         target_distance = 0.6  # Target distance to move forward
         ep_chassis.move(x=target_distance, y=0, z=0, xy_speed=0.6).wait_for_completed()
         time.sleep(1)
@@ -389,7 +391,7 @@ class Robomaster:
         self.visited.append(self.position)
         print(f'visited{self.visited}')
         print(f'robot direct :{self.robot_direction}')
-        print(f'direction :{possible_moves},new_position: {new_position}') 
+        
         possible_moves = []
         for direction in DIRECTIONS:
             dx, dy = direction
@@ -405,7 +407,9 @@ class Robomaster:
                     new_position = (x + dy, y - dx )
             if self.is_path_clear(direction) and new_position not in self.visited:
                 n+=1
+                
                 possible_moves.append((direction))
+                print(f'new_position: {new_position} and direction{direction}') 
                 
         if len(possible_moves) > 1:
             self.junctions.append(self.position)
@@ -419,9 +423,8 @@ class Robomaster:
                 return
             dx, dy = self.path_history.pop()
             self.move_in_direction(-dx, -dy)
-            if len(self.path_history) == 0:
-                self.position = self.junctions.pop()
             
+                
 
         dx, dy = possible_moves[0]
         self.position = (x + dx, y + dy)
