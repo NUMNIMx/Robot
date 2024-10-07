@@ -20,7 +20,7 @@ cv2.createTrackbar("Upper-S", "Color Picker", 255, 255, nothing)
 cv2.createTrackbar("Upper-V", "Color Picker", 255, 255, nothing)
 
 
-image_path = r'D:\Subject\Robot Ai\Robot_group\Robot_old_too\lab_4_immage\a5_0.1floor.jpg'
+image_path = r'D:\Subject\Robot Ai\Robot_group\Robot_old_too\boky_man32.jpg'
 
 frame = cv2.imread(image_path)
 

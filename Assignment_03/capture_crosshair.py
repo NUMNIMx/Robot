@@ -33,7 +33,7 @@ def draw_crosshair(frame):
 def save_scv(ep_camera):
     """Save an image from the camera feed."""
     frame = ep_camera.read_cv2_image(strategy="newest") 
-    cv2.imwrite('boky_man.jpg', frame)
+    cv2.imwrite('boky_man64.jpg', frame)
     print("Capture complete.")
 
 if __name__ == '__main__':
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     while True:
         # Get the latest frame from the camera
         frame = ep_camera.read_cv2_image(strategy="newest")
-        ep_blaster.set_led(brightness=0, effect=blaster.LED_ON)
+        ep_blaster.set_led(brightness=64, effect=blaster.LED_ON)
         time.sleep(1)
         if frame is not None:
             # Draw the crosshair on the frame

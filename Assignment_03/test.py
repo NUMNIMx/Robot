@@ -12,6 +12,28 @@ def came(image):
     if key == ord('q'):
         return False
     return True
+def find_theif(image):
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    lower_blue = np.array([102, 123, 113])
+    upper_blue = np.array([179, 255, 255])
+    lower_blue2 = np.array([94, 158, 62])
+    upper_blue2 = np.array([180, 255, 255])
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
+    mask1 = cv2.inRange(hsv, lower_blue2, upper_blue2)
+    mask = cv2.bitwise_or(mask, mask1)
+    
+    blurred = cv2.GaussianBlur(mask, (5, 5), 0)
+    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=1.2, minDist=50, param1=50, param2=30, minRadius=10, maxRadius=200)
+
+    if circles is not None:
+        circles = np.round(circles[0, :]).astype("int")
+        for (x, y, r) in circles:
+            # Draw the circle in the original image
+            cv2.circle(image, (x, y), r, (0, 255, 0), 4)
+            # Draw a rectangle at the center of the circle
+            cv2.rectangle(image, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+    
+    return image, circles
 
 def find_theif_body(image, image1):
     # Compute the absolute difference between two frames
@@ -19,7 +41,7 @@ def find_theif_body(image, image1):
     blurred = cv2.GaussianBlur(result, (5, 5), 0)
     
     # Load the template image
-    template = cv2.imread(r'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Assignment_03\tem_match.png') 
+    template = cv2.imread(r'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Assignment_03\bottleman_1_plate_led.jpg') 
     
     if template is None:
         print("Template image not found.")

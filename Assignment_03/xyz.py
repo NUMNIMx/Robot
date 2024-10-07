@@ -127,7 +127,7 @@ if __name__ == '__main__':
                 time.sleep(1)
                 before = frame
                 after = ep_camera.read_cv2_image(strategy="newest", timeout=2)
-                im = find_theif_body(before,after)
+                # im = find_theif_body(before,after)
                 if circles is not None:
                     for (x, y, r) in circles:
                         err_x = center_x - x

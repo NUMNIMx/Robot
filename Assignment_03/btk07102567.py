@@ -136,181 +136,61 @@ class Robomaster:
 
     def tof_check(self, direction):
         if direction == (0, 1):
-            ep_gimbal.moveto(pitch=0, yaw=90, yaw_speed=200).wait_for_completed()
-            time.sleep(0.4)
+            ep_gimbal.moveto(pitch=0, yaw=90, yaw_speed=100).wait_for_completed()
             tof = l_tof[-1]
         if direction == (0, -1):
-            ep_gimbal.moveto(pitch=0, yaw=-90, yaw_speed=200).wait_for_completed()  
-            time.sleep(0.4)  
+            ep_gimbal.moveto(pitch=0, yaw=-90, yaw_speed=100).wait_for_completed()    
             tof = l_tof[-1]
         if direction == (-1,0):
-            ep_gimbal.moveto(pitch=0, yaw=-180, yaw_speed=200).wait_for_completed()
-            time.sleep(0.4)
+            ep_gimbal.moveto(pitch=0, yaw=-180, yaw_speed=100).wait_for_completed()
             tof = l_tof[-1]
         return tof      
 
     def is_path_clear(self, direction):
         path_clear = bool
         print(f'robot direct :{self.robot_direction}')
-        if self.robot_direction == 'เหนือ':
-            if direction == (0, 1):  # Right
-                if s[2] == 1:
-                    if io['right'][-1] == 0:
-                        path_clear = False
-                    elif io['right'][-1] == 1:
-                        tof = self.tof_check(direction)
-                        time.sleep(0.4)
-                        if tof <= 250:
-                            path_clear = False
-                if s[2] == 0 :
-                    path_clear = True
-            if direction == (0, -1):  # Left
-                if s[0] == 1:
-                    if io['left'][-1] == 0:
-                        path_clear = False
-                    elif io['left'][-1] == 1:
-                        tof = self.tof_check(direction)
-                        time.sleep(0.4)
-                        if tof <= 250:
-                            path_clear = False
-                if s[0] == 0 :
-                    path_clear = True
-
-            if direction == (1, 0):  # Forward
-                if s[1] == 1:
+        if direction == (0, 1):  # Right
+            if s[2] == 1:
+                if io['right'][-1] == 0:
                     path_clear = False
-                if s[1] == 0:
-                    path_clear = True
-            if direction == (-1, 0):  # Backward
-                if len(self.visited) < 2 :
+                elif io['right'][-1] == 1:
                     tof = self.tof_check(direction)
-                    time.sleep(0.4)
-                    if tof <= 250 :
+                    if tof <= 250:
                         path_clear = False
-                    else :
-                        path_clear = True
-                else :
+            if s[2] == 0 :
+                if io['right'][-1] == 1:
+                    path_clear = True
+                elif io['right'][-1] == 0:
                     path_clear = False
+        if direction == (0, -1):  # Left
+            if s[0] == 1:
+                if io['left'][-1] == 0:
+                    path_clear = False
+                elif io['left'][-1] == 1:
+                    tof = self.tof_check(direction)
+                    if tof <= 250:
+                        path_clear = False
+            if s[0] == 0 :
+                if io['left'][-1] == 1:
+                    path_clear = True
+                elif io['left'][-1] == 0:
+                    path_clear = False
+
+        if direction == (1, 0):  # Forward
+            if s[1] == 1:
+                path_clear = False
+            if s[1] == 0:
+                path_clear = True
+        if direction == (-1, 0):  # Backward
+            if len(self.visited) < 2 :
+                tof = self.tof_check(direction)
+                if tof <= 250 :
+                    path_clear = False
+                else :
+                    path_clear = True
+            else :
+                path_clear = False
                     
-        if self.robot_direction == 'ตะวันออก':
-            if direction == (0, 1):  
-                if s[1] == 1:
-                    path_clear = False
-                if s[1] == 0:
-                    path_clear = True
-            if direction == (0, -1):  
-                if len(self.visited) > 2 :
-                    tof = self.tof_check(direction)
-                    time.sleep(0.4)
-                    if tof <= 250 :
-                        path_clear = False
-                    else :
-                        path_clear = True
-                else :
-                    path_clear = False
-
-            if direction == (1, 0):  # Forward
-                if s[0] == 1:
-                    if io['left'][-1] == 0:
-                        path_clear = False
-                    elif io['left'][-1] == 1:
-                        tof = self.tof_check(direction)
-                        time.sleep(0.4)
-                        if tof <= 250:
-                            path_clear = False
-                if s[0] == 0 :
-                    path_clear = True
-            if direction == (-1, 0):  # Backward
-                if s[2] == 1:
-                    if io['right'][-1] == 0:
-                        path_clear = False
-                    elif io['right'][-1] == 1:
-                        tof = self.tof_check((0,1))
-                        time.sleep(0.4)
-                        if tof <= 250:
-                            path_clear = False
-                if s[2] == 0 :
-                    path_clear = True
-
-        if self.robot_direction == 'ใต้':
-            if direction == (0, 1):  # Right
-                if s[0] == 1:
-                    if io['left'][-1] == 0:
-                        path_clear = False
-                    elif io['left'][-1] == 1:
-                        tof = self.tof_check(direction)
-                        time.sleep(0.4)
-                        if tof <= 250:
-                            path_clear = False
-                if s[0] == 0 :
-                    path_clear = True
-            if direction == (0, -1):  # Left
-                if s[2] == 1:
-                    if io['right'][-1] == 0:
-                        path_clear = False
-                    elif io['right'][-1] == 1:
-                        tof = self.tof_check(direction)
-                        time.sleep(0.4)
-                        if tof <= 250:
-                            path_clear = False
-                if s[2] == 0 :
-                    path_clear = True
-            if direction == (1, 0):  # Forward
-                if len(self.visited) > 2 :
-                    tof = self.tof_check(direction)
-                    time.sleep(0.4)
-                    if tof <= 250 :
-                        path_clear = False
-                    else :
-                        path_clear = True
-                else :
-                    path_clear = False
-            if direction == (-1, 0):  # Backward
-                if s[1] == 1:
-                    path_clear = False
-                if s[1] == 0:
-                    path_clear = True
-
-        if self.robot_direction == 'ตะวันตก':
-            if direction == (0, 1):  # Right
-                if len(self.visited) > 2 :
-                    tof = self.tof_check(direction)
-                    time.sleep(0.4)
-                    if tof <= 250 :
-                        path_clear = False
-                    else :
-                        path_clear = True
-                else :
-                    path_clear = False
-            if direction == (0, -1):  # Left
-                if s[0] == 0 :
-                    path_clear = True
-                
-                if s[1] == 1:
-                    path_clear = False
-                if s[1] == 0:
-                    path_clear = True
-            if direction == (1, 0):  # Forward
-                if s[2] == 1:
-                    if io['right'][-1] == 0:
-                        path_clear = False
-                    elif io['right'][-1] == 1:
-                        tof = self.tof_check(direction)
-                        time.sleep(0.4)
-                        if tof <= 250:
-                            path_clear = False
-                if s[2] == 0 :
-                    path_clear = True
-            if direction == (-1, 0):  # Backward
-                if s[0] == 1:
-                    if io['left'][-1] == 0:
-                        path_clear = False
-                    elif io['left'][-1] == 1:
-                        tof = self.tof_check(direction)
-                        time.sleep(0.4)
-                        if tof <= 250:
-                            path_clear = False
-
         return path_clear
     
     def move_in_direction(self, dx, dy):
@@ -405,7 +285,7 @@ class Robomaster:
                     new_position = (x + dy, y - dx )
             if self.is_path_clear(direction) and new_position not in self.visited:
                 n+=1
-                possible_moves.append((direction))
+                possible_moves.append(direction)
                 print(f'direction :{possible_moves},new_position: {new_position}') 
         if len(possible_moves) > 1:
             self.junctions.append(self.position)
