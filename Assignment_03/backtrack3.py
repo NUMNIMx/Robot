@@ -16,6 +16,7 @@ alpha = 0.3
 filtered_left_values = []
 filtered_right_values = []
 n=0
+
 def sub_data_handler(sub_info):
     distance = sub_info
     l_tof.append(int(distance[0]))
@@ -114,7 +115,7 @@ class Robomaster:
         self.visited = []  # List to store visited cells
         self.junctions = []  # List to store junctions (multiple paths)
         self.path_history = []
-        self.rotate_histry = []
+        self.last_direction = []
         self.exploration_complete = False
 
         ep_robot = robot.Robot()
@@ -183,19 +184,23 @@ class Robomaster:
         ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
         target_distance = 0.6  # Target distance to move forward
         ep_chassis.move(x=target_distance, y=0, z=0, xy_speed=0.6).wait_for_completed()
+        self.last_direction.append((1,0))
         time.sleep(1)
         self.explore_step()
 
     def turn_right(self):
         ep_chassis.move(x=0, y=0, z=-90, z_speed=100).wait_for_completed()
+        self.last_direction.append((0,1))
         self.Move()
 
     def turn_left(self):
         ep_chassis.move(x=0, y=0, z=90, z_speed=100).wait_for_completed()
+        self.last_direction.append((0,-1))
         self.Move()
 
     def backward(self):
         ep_chassis.move(x=0, y=0, z=-180, z_speed=100).wait_for_completed()
+        self.last_direction.append((-1,0))
         self.Move()
 
     def explore_step(self):
@@ -209,25 +214,31 @@ class Robomaster:
         possible_moves = []
         for direction in DIRECTIONS:
             dx, dy = direction
-            new_position = (x + dx, y + dy)
+            if direction in [(1,0),(-1,0),(0,1),(0,-1)] :
+                if len(self.last_direction) == 0:
+                    self.last_direction.append((0,0))
+                if self.last_direction[-1] == (1,0) or self.last_direction[-1] == (0,0):
+                    new_position = (x + dx, y + dy)
+                if self.last_direction[-1] == (-1,0):
+                    new_position = (x - dx, y - dy)
+                if self.last_direction[-1] == (0,1):
+                    new_position = (x - dy, y + dx)
+                if self.last_direction[-1] == (0,-1):
+                    new_position = (x + dy, y - dx )
             if self.is_path_clear(direction) and new_position not in self.visited:
                 n+=1
                 possible_moves.append(direction)
-                print(f'direction :{possible_moves}{n}\'s')
-            if len(self.junctions)>0:
-                self.path_history.append((dx, dy))
+                print(f'direction :{possible_moves}{n}\'s') 
         if len(possible_moves) > 1:
             self.junctions.append(self.position)
             print(f'junction :{self.junctions}')
-        
-        
-
+        if len(self.junctions)>0:
+            self.path_history.append((dx, dy))
         if not possible_moves:
             if not self.junctions:
                 print("Maze exploration complete")
                 self.exploration_complete = True
                 return
-
             dx, dy = self.path_history.pop()
             self.move_in_direction(-dx, -dy)
             if len(self.path_history) == 0:

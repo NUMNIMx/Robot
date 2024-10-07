@@ -13,6 +13,29 @@ def came(image):
         return False
     return True
 
+def find_theif(image):
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    lower_blue = np.array([102, 123, 113])
+    upper_blue = np.array([179, 255, 255])
+    lower_blue2 = np.array([94, 158, 62])
+    upper_blue2 = np.array([180, 255, 255])
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
+    mask1 = cv2.inRange(hsv, lower_blue2, upper_blue2)
+    mask = cv2.bitwise_or(mask, mask1)
+    
+    blurred = cv2.GaussianBlur(mask, (5, 5), 0)
+    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=1.2, minDist=50, param1=50, param2=30, minRadius=10, maxRadius=200)
+
+    if circles is not None:
+        circles = np.round(circles[0, :]).astype("int")
+        for (x, y, r) in circles:
+            # Draw the circle in the original image
+            cv2.circle(image, (x, y), r, (0, 255, 0), 4)
+            # Draw a rectangle at the center of the circle
+            cv2.rectangle(image, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+    
+    return image, circles
+
 def find_theif_body(image, image1):
     # Compute the absolute difference between two frames
     result = cv2.absdiff(image, image1)
@@ -32,7 +55,7 @@ def find_theif_body(image, image1):
     match_result = cv2.matchTemplate(blurred, template, cv2.TM_CCOEFF_NORMED)
     
     # Define a threshold to consider a match valid
-    threshold = 0.2
+    threshold = 0.8
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(match_result)
     
     if max_val > threshold:
@@ -58,8 +81,8 @@ if __name__ == '__main__':
     center_y = 720 / 2
 
     p = 0.6 / 2.2
-    i = 0 # p / (0.7 / 2)
-    d = 0 # p * (0.7 / 8)
+    i = 0#p / (0.7 / 2)
+    d = 0#p * (0.7 / 8)
 
     accumulate_err_x = 0
     accumulate_err_y = 0
@@ -69,13 +92,28 @@ if __name__ == '__main__':
         while True:
             frame = ep_camera.read_cv2_image(strategy="newest", timeout=0.5)
             if frame is not None:
+                result_image, circles = find_theif(frame)
                 ep_blaster.set_led(brightness=32, effect=blaster.LED_ON)
                 time.sleep(1)
                 before = frame
                 after = ep_camera.read_cv2_image(strategy="newest", timeout=2)
-                im = find_theif_body(before, after)
+                im = find_theif_body(before,after)
+                if circles is not None:
+                    for (x, y, r) in circles:
+                        err_x = center_x - x
+                        err_y = center_y - y
+                        after_time = time.time()
+                        accumulate_err_x += err_x * (after_time - prev_time)
+                        accumulate_err_y += err_y * (after_time - prev_time)
 
-                if not came(im):
+                        speed_x = p * err_x
+                        speed_y = p * err_y
+
+                        ep_gimbal.drive_speed(pitch_speed=speed_y, yaw_speed=-speed_x)
+
+                        prev_time = after_time
+
+                if not came(result_image):
                     break
                 
             time.sleep(0.1)

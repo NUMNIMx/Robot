@@ -39,7 +39,7 @@ def find_theif(image):
 def find_theif_body(image, image1):
     result = cv2.absdiff(image, image1)
     blurred = cv2.GaussianBlur(result, (5, 5), 0)
-    template = cv2.imread('') 
+    template = cv2.imread('tem_match.png') 
     return blurred
 if __name__ == '__main__':
     ep_robot = robot.Robot()
