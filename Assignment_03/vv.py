@@ -36,10 +36,11 @@ def find_theif(image):
             cv2.rectangle(image, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
     
     return image, circles
+
 def find_theif_body(image, image1):
     result = cv2.absdiff(image, image1)
     blurred = cv2.GaussianBlur(result, (5, 5), 0)
-    template = cv2.imread('tem_match.png') 
+    template = cv2.imread(r'D:\Subject\Robot Ai\Robot_group\Robot_old_too\Assignment_03\tem_match.png') 
     return blurred
 if __name__ == '__main__':
     ep_robot = robot.Robot()
@@ -66,11 +67,12 @@ if __name__ == '__main__':
             frame = ep_camera.read_cv2_image(strategy="newest", timeout=0.5)
             if frame is not None:
                 result_image, circles = find_theif(frame)
-                ep_blaster.set_led(brightness=32, effect=blaster.LED_ON)
+                ep_blaster.set_led(brightness=0, effect=blaster.LED_OFF)
                 time.sleep(1)
                 before = frame
                 after = ep_camera.read_cv2_image(strategy="newest", timeout=2)
                 im = find_theif_body(before,after)
+                # time.sleep(1)
                 if circles is not None:
                     for (x, y, r) in circles:
                         err_x = center_x - x

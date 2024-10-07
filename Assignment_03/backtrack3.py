@@ -25,7 +25,7 @@ def sub_data_handler(sub_info):
 def state(tof, charp):
     min_charp = 20
     if len(tof) > 0:
-        if tof[-1] <= 250:
+        if tof[-1] <= 280:
             s[1] = 1
         else:
             s[1] = 0
@@ -179,9 +179,29 @@ class Robomaster:
             self.Move()
         if dx == -1 :
             self.backward()
-    
+    def center_reset(self,adl,adr):
+        move = 0 
+        if adl <= 5 :
+            move = (adl - 5)/100
+            if abs(move) <= 0.15 :
+                ep_chassis.move(x=0, y=0.05, z=0, xy_speed=0.1)
+                print('move complete')
+            else:
+                ep_chassis.move(x=0, y=move, z=0, xy_speed=0.1)
+                print('move complete')
+            time.sleep(3)
+        if adr <= 5 :
+            move = (adr - 5)/100
+            if abs(move) <= 0.15 :
+                ep_chassis.move(x=0, y=-0.05, z=0, xy_speed=0.1)
+                print('move complete')
+            else:
+                ep_chassis.move(x=0, y=move, z=0, xy_speed=0.1)
+                print('move complete')
+            time.sleep(3)
     def Move(self):
         ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
+        self.center_reset(ad['left'][-1],ad['right'[-1]])
         target_distance = 0.6  # Target distance to move forward
         ep_chassis.move(x=target_distance, y=0, z=0, xy_speed=0.6).wait_for_completed()
         self.last_direction.append((1,0))
@@ -228,7 +248,7 @@ class Robomaster:
             if self.is_path_clear(direction) and new_position not in self.visited:
                 n+=1
                 possible_moves.append(direction)
-                print(f'direction :{possible_moves}{n}\'s') 
+                print(f'direction :{possible_moves},new_position: {new_position}') 
         if len(possible_moves) > 1:
             self.junctions.append(self.position)
             print(f'junction :{self.junctions}')
