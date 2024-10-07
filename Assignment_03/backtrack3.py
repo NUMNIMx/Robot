@@ -151,7 +151,7 @@ class Robomaster:
 
     def is_path_clear(self, direction):
         path_clear = bool
-        print(f'robot direct :{self.robot_direction}')
+        
         if self.robot_direction == 'เหนือ':
             if direction == (0, 1):  # Right
                 if s[2] == 1:
@@ -329,19 +329,18 @@ class Robomaster:
             move = (adl - 7.5)/100
             if abs(move) <= 0.15 :
                 ep_chassis.move(x=0, y=0.05, z=0, xy_speed=0.1)
-                print('move complete')
+                
             else:
                 ep_chassis.move(x=0, y=move, z=0, xy_speed=0.1)
-                print('move complete')
+                
             time.sleep(3)
         if adr <= 7.5 :
             move = (adr - 7.5)/100
             if abs(move) <= 0.15 :
                 ep_chassis.move(x=0, y=-0.05, z=0, xy_speed=0.1)
-                print('move complete')
+                
             else:
                 ep_chassis.move(x=0, y=move, z=0, xy_speed=0.1)
-                print('move complete')
             time.sleep(3)
 
     def Move(self):
@@ -389,6 +388,8 @@ class Robomaster:
         x, y = self.position
         self.visited.append(self.position)
         print(f'visited{self.visited}')
+        print(f'robot direct :{self.robot_direction}')
+        print(f'direction :{possible_moves},new_position: {new_position}') 
         possible_moves = []
         for direction in DIRECTIONS:
             dx, dy = direction
@@ -400,13 +401,12 @@ class Robomaster:
                    
                 if self.robot_direction == 'ตะวันออก':
                     new_position = (x - dy, y + dx)
-                    print(new_position)
                 if self.robot_direction == 'ตะวันตก':
                     new_position = (x + dy, y - dx )
             if self.is_path_clear(direction) and new_position not in self.visited:
                 n+=1
                 possible_moves.append((direction))
-                print(f'direction :{possible_moves},new_position: {new_position}') 
+                
         if len(possible_moves) > 1:
             self.junctions.append(self.position)
             print(f'junction :{self.junctions}')
@@ -421,7 +421,7 @@ class Robomaster:
             self.move_in_direction(-dx, -dy)
             if len(self.path_history) == 0:
                 self.position = self.junctions.pop()
-            return
+            
 
         dx, dy = possible_moves[0]
         self.position = (x + dx, y + dy)
