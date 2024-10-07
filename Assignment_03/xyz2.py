@@ -66,22 +66,34 @@ def detect_yellow_chickens(image):
 
 # Function to detect movement by comparing frames
 def find_theif_body(image1, image2):
+    # Convert the images to HSV
+    hsv1 = cv2.cvtColor(image1, cv2.COLOR_BGR2HSV)
+    hsv2 = cv2.cvtColor(image2, cv2.COLOR_BGR2HSV)
+    
     # Compute the absolute difference between two frames
-    result = cv2.absdiff(image1, image2)
+    result = cv2.absdiff(hsv1, hsv2)
+    
+    # Apply GaussianBlur to reduce noise
     blurred = cv2.GaussianBlur(result, (5, 5), 0)
 
-    # Find contours
-    contours, _ = cv2.findContours(blurred, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Create mask for detecting blue color in the difference
+    lower_blue = np.array([75, 180, 205])
+    upper_blue = np.array([180, 255, 255])
+    mask = cv2.inRange(blurred, lower_blue, upper_blue)
+
+    # Find contours from the mask
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     for contour in contours:
         area = cv2.contourArea(contour)
-        if area > 200:  # Minimum area threshold
+        if area > 50:  # Minimum area threshold
             x, y, w, h = cv2.boundingRect(contour)
             cv2.rectangle(image1, (x, y), (x + w, y + h), (0, 0, 255), 2)
             cv2.putText(image1, 'Movement Detected', (x, y-10), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
     return image1
+
 
 # Control the LED when detecting an object
 def light_when_detected(ep_blaster, detection):
