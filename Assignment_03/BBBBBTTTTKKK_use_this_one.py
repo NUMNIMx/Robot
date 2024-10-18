@@ -149,7 +149,7 @@ def find_thief(image):
 
 class Robomaster:
     def __init__(self):
-        self.position = (1,3)
+        self.position = (0,2)
         self.visited = []  # List to store visited cells
         self.junctions = []  #ลิส node ทางที่เป็นไปได้
         self.path_history = []
@@ -159,7 +159,7 @@ class Robomaster:
         self.wall = [i for i in wall]
         self.sensor_data = {}
         ep_robot = robot.Robot()
-        ep_robot.initialize(conn_type="ap",proto_type="tcp")
+        ep_robot.initialize(conn_type="ap",proto_type="udp")
         global ep_chassis, ep_gimbal
         ep_chassis = ep_robot.chassis
         ep_sensor = ep_robot.sensor
@@ -318,6 +318,7 @@ class Robomaster:
 
     def turn_right(self):
         ep_chassis.move(x=0, y=0, z=-90, z_speed=100).wait_for_completed()
+        self.center_re()
         global current_index
         current_index = (current_index+1)%4
         self.robot_direction = DIRECTIONS2[current_index]
@@ -325,6 +326,7 @@ class Robomaster:
 
     def turn_left(self):
         ep_chassis.move(x=0, y=0, z=90, z_speed=100).wait_for_completed()
+        self.center_re()
         global current_index
         current_index = (current_index-1)%4
         self.robot_direction = DIRECTIONS2[current_index]
@@ -332,10 +334,16 @@ class Robomaster:
 
     def backward(self):
         ep_chassis.move(x=0, y=0, z=-180, z_speed=100).wait_for_completed()
+        self.center_re()
         global current_index
         current_index = (current_index+2)%4
         self.robot_direction = DIRECTIONS2[current_index]
         self.Move()
+
+    def center_re(self):
+        if (ad['left'][-1] != 'empty' and ad['right'][-1] != 'empty'):    
+            print(ad['left'][-1],ad['right'][-1])
+            self.center_reset(ad['left'][-1],ad['right'][-1])
 
     def explore_step(self):
         global n
@@ -562,6 +570,7 @@ class Robomaster:
         self.position = (x + tx, y + ty)
         self.sensor_data[(x + tx, y + ty)] = data
         print(self.sensor_data)
+        print('ตำแหน่งปัจจุบัน : ',self.robot_direction)
         self.move_in_direction(dx, dy)
 
     def explore_maze(self):
