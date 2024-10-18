@@ -570,7 +570,6 @@ class Robomaster:
         self.position = (x + tx, y + ty)
         self.sensor_data[(x + tx, y + ty)] = data
         print(self.sensor_data)
-        print('ตำแหน่งปัจจุบัน : ',self.robot_direction)
         self.move_in_direction(dx, dy)
 
     def explore_maze(self):
