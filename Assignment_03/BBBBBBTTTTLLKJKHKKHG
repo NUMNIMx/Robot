@@ -159,7 +159,7 @@ def main():
 
     try:
         while True:
-            frame = ep_camera.read_cv2_image(strategy="newest", timeout=0.5)
+            frame = ep_camera.read_cv2_image(strategy="newest", timeout=2)
             if frame is not None:
                 result_image, circles = find_thief(frame)
 
