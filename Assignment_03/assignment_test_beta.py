@@ -159,7 +159,7 @@ class Robomaster:
         self.wall = [i for i in wall]
         self.sensor_data = {}
         ep_robot = robot.Robot()
-        ep_robot.initialize(conn_type="ap")
+        ep_robot.initialize(conn_type="ap",proto_type="udp")
         global ep_chassis, ep_gimbal
         ep_chassis = ep_robot.chassis
         ep_sensor = ep_robot.sensor
