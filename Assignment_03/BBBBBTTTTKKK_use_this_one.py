@@ -170,6 +170,7 @@ class Robomaster:
         ep_sensor.sub_distance(freq=50, callback=sub_data_handler)
         ep_chassis.sub_position(freq=50, callback=sub_position_handler)
         ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
+        
     
     def plot_maze(self):
         # Get the grid size based on the sensor data keys

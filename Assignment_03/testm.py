@@ -61,16 +61,7 @@ def state(tof, charp):
             s[2] = 1
         else:
             s[2] = 0
-class Camera:
-    def __init__(self):
-        # Initialize the camera
-        pass  # Add actual camera initialization logic here
 
-    def capture_image(self):
-        # Logic to capture an image
-        print("Capturing image...")  # Replace with actual capture logic
-        return "image_data"  # Return the captured image data
-def sub_data_handler2(sub_info):
     global previous_filtered_left, previous_filtered_right
     io_data, ad_data = sub_info
     # io
@@ -178,9 +169,9 @@ class Robomaster:
         ep_sensor.sub_distance(freq=50, callback=self.sub_data_handler)
         ep_chassis.sub_position(freq=50, callback=self.sub_position_handler)
         ep_gimbal.recenter(pitch_speed=200, yaw_speed=200).wait_for_completed()
+        self.ep_camera = ep_robot.camera
+        self.ep_camera.start_video_stream(display=False)
 
-        self.camera = Camera()  
-        self.camera.initialize() 
     def plot_maze(self):
         # Get the grid size based on the sensor data keys
         max_x = max(key[0] for key in self.sensor_data.keys())
